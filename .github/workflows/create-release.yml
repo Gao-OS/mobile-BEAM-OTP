@@ -1,0 +1,158 @@
+name: "Create Release"
+
+on:
+  workflow_dispatch:
+
+env:
+  OTP_SOURCE: https://github.com/erlang/otp
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    name: "Prepare release"
+    runs-on: ubuntu-latest
+    outputs:
+      otp-version: ${{ steps.versions.outputs.otp-version }}
+      elixir-version: ${{ steps.versions.outputs.elixir-version }}
+      tag-name: ${{ steps.versions.outputs.tag-name }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Read versions from .tool-versions
+        id: versions
+        run: |
+          OTP_VERSION=$(grep '^erlang' .tool-versions | awk '{print $2}')
+          ELIXIR_VERSION=$(grep '^elixir' .tool-versions | awk '{print $2}')
+          TAG_NAME="OTP-${OTP_VERSION}"
+          echo "otp-version=${OTP_VERSION}" >> $GITHUB_OUTPUT
+          echo "elixir-version=${ELIXIR_VERSION}" >> $GITHUB_OUTPUT
+          echo "tag-name=${TAG_NAME}" >> $GITHUB_OUTPUT
+          echo "OTP Version: ${OTP_VERSION}"
+          echo "Elixir Version: ${ELIXIR_VERSION}"
+          echo "Tag: ${TAG_NAME}"
+
+      - name: Create git tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tagName = '${{ steps.versions.outputs.tag-name }}';
+            try {
+              await github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `refs/tags/${tagName}`,
+                sha: context.sha
+              });
+              console.log(`Created tag: ${tagName}`);
+            } catch (error) {
+              if (error.status === 422) {
+                console.log(`Tag ${tagName} already exists, continuing...`);
+              } else {
+                throw error;
+              }
+            }
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.versions.outputs.tag-name }}
+          name: "OTP ${{ steps.versions.outputs.otp-version }}"
+          body: |
+            BEAM runtime for mobile platforms
+
+            - Erlang/OTP: ${{ steps.versions.outputs.otp-version }}
+            - Elixir: ${{ steps.versions.outputs.elixir-version }}
+          draft: false
+          prerelease: false
+
+  build-android:
+    name: "Build Android"
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    env:
+      OTP_TAG: OTP-${{ needs.prepare.outputs.otp-version }}
+    steps:
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ needs.prepare.outputs.otp-version }}
+          elixir-version: ${{ needs.prepare.outputs.elixir-version }}
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Elixir dependencies
+        run: |
+          scripts/install_elixir.sh "$HOME/elixir"
+          echo "$HOME/elixir/bin" >> $GITHUB_PATH
+
+      - name: Build Android runtimes
+        run: |
+          mix deps.get
+          mix package.android.runtime
+
+      - name: Package as tar.gz
+        run: |
+          cd _build
+          tar -czvf android-otp-${{ needs.prepare.outputs.otp-version }}.tar.gz \
+            armeabi-v7a/liberlang.a \
+            arm64-v8a/liberlang.a \
+            x86_64/liberlang.a
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-otp-${{ needs.prepare.outputs.otp-version }}
+          path: _build/android-otp-${{ needs.prepare.outputs.otp-version }}.tar.gz
+
+      - name: Publish to release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag-name }}
+          files: _build/android-otp-${{ needs.prepare.outputs.otp-version }}.tar.gz
+
+  build-ios:
+    name: "Build iOS"
+    runs-on: macos-latest
+    needs: [prepare]
+    env:
+      OTP_TAG: OTP-${{ needs.prepare.outputs.otp-version }}
+    steps:
+      - name: Install dependencies
+        run: brew install git carthage coreutils
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Elixir via asdf
+        run: |
+          git clone https://github.com/asdf-vm/asdf.git ~/.asdf
+          . $HOME/.asdf/asdf.sh
+          asdf plugin add erlang
+          asdf plugin add elixir
+          asdf install
+
+      - name: Build iOS runtime
+        run: |
+          . $HOME/.asdf/asdf.sh
+          mix package.ios.runtime
+
+      - name: Package as tar.gz
+        run: |
+          cd _build
+          tar -czvf ios-otp-${{ needs.prepare.outputs.otp-version }}.tar.gz liberlang.xcframework
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-otp-${{ needs.prepare.outputs.otp-version }}
+          path: _build/ios-otp-${{ needs.prepare.outputs.otp-version }}.tar.gz
+
+      - name: Publish to release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag-name }}
+          files: _build/ios-otp-${{ needs.prepare.outputs.otp-version }}.tar.gz

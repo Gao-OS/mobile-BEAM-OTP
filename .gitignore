@@ -1,0 +1,8 @@
+/otp
+/_build
+erl_crash.dump
+*.so
+*.zip
+*.tar.gz
+*.tmp
+.DS_Store
