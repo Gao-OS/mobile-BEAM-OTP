@@ -1,0 +1,14 @@
+diff --git a/erts/emulator/zlib/zutil.h b/erts/emulator/zlib/zutil.h
+index 1234567..abcdefg 100644
+--- a/erts/emulator/zlib/zutil.h
++++ b/erts/emulator/zlib/zutil.h
+@@ -137,7 +137,8 @@
+ #  endif
+ #endif
+
+-#if defined(MACOS) || defined(TARGET_OS_MAC)
++/* Exclude iOS - it has fdopen() available */
++#if (defined(MACOS) || defined(TARGET_OS_MAC)) && !defined(__IOS__)
+ #  define OS_CODE  7
+ #  ifndef Z_SOLO
+ #    if defined(__MWERKS__) && __dest_os != __be_os && __dest_os != __win32_os

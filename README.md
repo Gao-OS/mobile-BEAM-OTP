@@ -16,7 +16,7 @@ Packages the Erlang/Elixir BEAM Virtual Machine into static libraries for mobile
 
 ## Prerequisites
 
-- [asdf](https://asdf-vm.com/) for Erlang/Elixir version management
+- [mise](https://mise.jdx.dev/) for Erlang/Elixir version management (reads `.tool-versions`)
 - Docker (for Android builds)
 - Xcode (for iOS builds)
 - Android NDK (auto-detected from `~/Library/Android/sdk/ndk`)
@@ -25,7 +25,7 @@ Packages the Erlang/Elixir BEAM Virtual Machine into static libraries for mobile
 
 ```bash
 # Install Erlang and Elixir versions from .tool-versions
-asdf install
+mise install
 
 # Get dependencies
 mix deps.get

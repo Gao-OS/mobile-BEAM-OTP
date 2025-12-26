@@ -76,7 +76,22 @@ defmodule MobileRuntimes do
       cmd(
         "git clone #{MobileRuntimes.otp_source()} _build/otp && cd _build/otp && git checkout #{MobileRuntimes.otp_tag()}"
       )
+
+      # Apply patches
+      apply_otp_patches()
     end
+  end
+
+  def apply_otp_patches() do
+    patches = Path.wildcard("patch/otp-*.patch")
+
+    for patch <- patches do
+      IO.puts("Applying patch: #{patch}")
+      cmd("cd _build/otp && git apply ../../#{patch}")
+    end
+
+    # Commit patches so clones inherit them
+    cmd("cd _build/otp && git add -A && git commit -m 'Apply mobile patches'")
   end
 
   def erts_version() do

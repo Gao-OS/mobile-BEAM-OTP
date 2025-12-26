@@ -13,8 +13,8 @@ mobile-BEAM packages the Erlang/Elixir BEAM Virtual Machine into platform-specif
 ## Build Commands
 
 ```bash
-# Install dependencies (asdf manages Erlang/Elixir versions via .tool-versions)
-asdf install
+# Install dependencies (mise manages Erlang/Elixir versions via .tool-versions)
+mise install
 mix deps.get
 
 # Build Android runtimes (requires Docker and ANDROID_NDK_HOME)
@@ -44,9 +44,9 @@ mix format
 
 ### Core Modules (`lib/`)
 
-- `runtimes.ex` - Base utilities: command execution, OTP management, archive repackaging
-- `runtimes/android.ex` - Android architecture definitions, NDK toolchain setup
-- `runtimes/ios.ex` - iOS architecture definitions
+- `mobile_runtimes.ex` - Base utilities: command execution, OTP management, archive repackaging
+- `mobile_runtimes/android.ex` - Android architecture definitions, NDK toolchain setup
+- `mobile_runtimes/ios.ex` - iOS architecture definitions
 
 ### Mix Tasks (`lib/mix/tasks/`)
 
@@ -66,7 +66,7 @@ mix format
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `OTP_TAG` | Erlang OTP version | OTP-26.2.5.16 |
+| `OTP_TAG` | Erlang OTP version | OTP-{version from .tool-versions} |
 | `OTP_SOURCE` | OTP repository URL | https://github.com/erlang/otp |
 | `ANDROID_NDK_HOME` | Android NDK path | Auto-detected from ~/Library/Android/sdk/ndk |
 | `SKIP_CLEAN_BUILD` | Reuse existing artifacts | unset |

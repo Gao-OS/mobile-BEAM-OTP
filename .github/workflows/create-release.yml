@@ -25,7 +25,8 @@ jobs:
         id: versions
         run: |
           OTP_VERSION=$(grep '^erlang' .tool-versions | awk '{print $2}')
-          ELIXIR_VERSION=$(grep '^elixir' .tool-versions | awk '{print $2}')
+          # Strip -otp-XX suffix from elixir version (used by mise)
+          ELIXIR_VERSION=$(grep '^elixir' .tool-versions | awk '{print $2}' | sed 's/-otp-[0-9]*//')
           TAG_NAME="OTP-${OTP_VERSION}"
           echo "otp-version=${OTP_VERSION}" >> $GITHUB_OUTPUT
           echo "elixir-version=${ELIXIR_VERSION}" >> $GITHUB_OUTPUT
@@ -75,7 +76,7 @@ jobs:
     env:
       OTP_TAG: OTP-${{ needs.prepare.outputs.otp-version }}
     steps:
-      - name: Setup Elixir
+      - name: Setup Erlang/Elixir
         uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ needs.prepare.outputs.otp-version }}
@@ -83,11 +84,6 @@ jobs:
 
       - name: Checkout repo
         uses: actions/checkout@v4
-
-      - name: Install Elixir dependencies
-        run: |
-          scripts/install_elixir.sh "$HOME/elixir"
-          echo "$HOME/elixir/bin" >> $GITHUB_PATH
 
       - name: Build Android runtimes
         run: |
@@ -97,6 +93,7 @@ jobs:
       - name: Package as tar.gz
         run: |
           cd _build
+          unzip android-runtime.zip
           tar -czvf android-otp-${{ needs.prepare.outputs.otp-version }}.tar.gz \
             armeabi-v7a/liberlang.a \
             arm64-v8a/liberlang.a \
@@ -127,17 +124,15 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Elixir via asdf
-        run: |
-          git clone https://github.com/asdf-vm/asdf.git ~/.asdf
-          . $HOME/.asdf/asdf.sh
-          asdf plugin add erlang
-          asdf plugin add elixir
-          asdf install
+      - name: Setup mise
+        uses: jdx/mise-action@v2
+
+      - name: Install Erlang and Elixir
+        run: mise install
 
       - name: Build iOS runtime
         run: |
-          . $HOME/.asdf/asdf.sh
+          mix deps.get
           mix package.ios.runtime
 
       - name: Package as tar.gz
