@@ -56,19 +56,6 @@ jobs:
               }
             }
 
-      - name: Create release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.versions.outputs.tag-name }}
-          name: "OTP ${{ steps.versions.outputs.otp-version }}"
-          body: |
-            BEAM runtime for mobile platforms
-
-            - Erlang/OTP: ${{ steps.versions.outputs.otp-version }}
-            - Elixir: ${{ steps.versions.outputs.elixir-version }}
-          draft: false
-          prerelease: false
-
   build-android:
     name: "Build Android"
     runs-on: ubuntu-latest
@@ -84,6 +71,19 @@ jobs:
 
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: Checkout OTP source
+        uses: actions/checkout@v4
+        with:
+          repository: erlang/otp
+          ref: OTP-${{ needs.prepare.outputs.otp-version }}
+          path: _build/otp
+
+      - name: Cache OpenSSL
+        uses: actions/cache@v4
+        with:
+          path: _build/*/openssl
+          key: openssl-android-${{ needs.prepare.outputs.otp-version }}
 
       - name: Build Android runtimes
         run: |
@@ -105,12 +105,6 @@ jobs:
           name: android-otp-${{ needs.prepare.outputs.otp-version }}
           path: _build/android-otp-${{ needs.prepare.outputs.otp-version }}.tar.gz
 
-      - name: Publish to release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ needs.prepare.outputs.tag-name }}
-          files: _build/android-otp-${{ needs.prepare.outputs.otp-version }}.tar.gz
-
   build-ios:
     name: "Build iOS"
     runs-on: macos-latest
@@ -119,10 +113,23 @@ jobs:
       OTP_TAG: OTP-${{ needs.prepare.outputs.otp-version }}
     steps:
       - name: Install dependencies
-        run: brew install git carthage coreutils
+        run: brew install coreutils
 
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: Checkout OTP source
+        uses: actions/checkout@v4
+        with:
+          repository: erlang/otp
+          ref: OTP-${{ needs.prepare.outputs.otp-version }}
+          path: _build/otp
+
+      - name: Cache OpenSSL
+        uses: actions/cache@v4
+        with:
+          path: _build/*/openssl
+          key: openssl-ios-${{ needs.prepare.outputs.otp-version }}
 
       - name: Setup mise
         uses: jdx/mise-action@v2
@@ -146,8 +153,44 @@ jobs:
           name: ios-otp-${{ needs.prepare.outputs.otp-version }}
           path: _build/ios-otp-${{ needs.prepare.outputs.otp-version }}.tar.gz
 
-      - name: Publish to release
+  release:
+    name: "Create Release"
+    runs-on: ubuntu-latest
+    needs: [prepare, build-android, build-ios]
+    steps:
+      - name: Download Android artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-otp-${{ needs.prepare.outputs.otp-version }}
+
+      - name: Download iOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-otp-${{ needs.prepare.outputs.otp-version }}
+
+      - name: Create release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.prepare.outputs.tag-name }}
-          files: _build/ios-otp-${{ needs.prepare.outputs.otp-version }}.tar.gz
+          name: "OTP ${{ needs.prepare.outputs.otp-version }}"
+          body: |
+            ## BEAM Runtime for Mobile Platforms
+
+            ### Build Info
+            - **OTP Source**: https://github.com/erlang/otp
+            - **OTP Version**: ${{ needs.prepare.outputs.otp-version }}
+            - **Elixir Version**: ${{ needs.prepare.outputs.elixir-version }}
+            - **Build Ref**: ${{ github.sha }}
+            - **Build Date**: ${{ github.event.repository.updated_at }}
+
+            ### Included NIFs
+            - exqlite (SQLite3)
+
+            ### Architectures
+            **Android**: armeabi-v7a, arm64-v8a, x86_64
+            **iOS**: arm64, arm64-simulator, x86_64-simulator
+          draft: false
+          prerelease: false
+          files: |
+            android-otp-${{ needs.prepare.outputs.otp-version }}.tar.gz
+            ios-otp-${{ needs.prepare.outputs.otp-version }}.tar.gz

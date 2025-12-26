@@ -76,9 +76,12 @@ defmodule MobileRuntimes do
       cmd(
         "git clone #{MobileRuntimes.otp_source()} _build/otp && cd _build/otp && git checkout #{MobileRuntimes.otp_tag()}"
       )
+    end
 
-      # Apply patches
+    # Apply patches if not already done (supports actions/checkout pre-cloned OTP)
+    if !File.exists?("_build/otp/.mobile_patched") do
       apply_otp_patches()
+      File.write!("_build/otp/.mobile_patched", "true")
     end
   end
 
