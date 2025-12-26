@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # called with `libtool -static -o <output> <input>...`
 
 # remove the -static flag and handle -o flag properly

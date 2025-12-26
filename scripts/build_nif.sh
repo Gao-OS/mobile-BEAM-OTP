@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ensure there is rebar3 in path
 export PATH=$PATH:~/.mix

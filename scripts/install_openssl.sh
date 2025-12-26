@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 export VSN=1.1.1v
 export VSN_HASH=d6697e2871e77238460402e9362d47d18382b15ef9f246aba6c7bd780d38a6b0
 
