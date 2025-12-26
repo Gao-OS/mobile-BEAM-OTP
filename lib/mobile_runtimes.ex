@@ -90,7 +90,8 @@ defmodule MobileRuntimes do
       cmd("cd _build/otp && git apply ../../#{patch}")
     end
 
-    # Commit patches so clones inherit them
+    # Commit patches so clones inherit them (configure git user for CI environments)
+    cmd("cd _build/otp && git config user.email 'build@mobile-beam.local' && git config user.name 'Mobile BEAM Build'")
     cmd("cd _build/otp && git add -A && git commit -m 'Apply mobile patches'")
   end
 
