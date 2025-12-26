@@ -5,19 +5,18 @@ Packages the Erlang/Elixir BEAM Virtual Machine into static libraries for mobile
 ## Supported Platforms
 
 **Android** (API level 26+):
-- arm (armeabi-v7a)
-- arm64 (arm64-v8a)
+- armeabi-v7a (arm 32-bit)
+- arm64-v8a (arm64)
 - x86_64 (emulator)
 
-**iOS**:
+**iOS** (12.0+):
 - arm64 (devices)
-- arm64 (M1/M2 simulator)
-- x86_64 (Intel simulator)
+- arm64-simulator (M1/M2 Macs)
+- x86_64-simulator (Intel Macs)
 
 ## Prerequisites
 
 - [mise](https://mise.jdx.dev/) for Erlang/Elixir version management (reads `.tool-versions`)
-- Docker (for Android builds)
 - Xcode (for iOS builds)
 - Android NDK (auto-detected from `~/Library/Android/sdk/ndk`)
 
@@ -39,7 +38,7 @@ mix deps.get
 mix package.android.runtime
 ```
 
-Output: `_build/{arch}/liberlang.a` for each architecture
+Output: `_build/android-runtime.zip` containing `liberlang.a` for each architecture
 
 ### iOS
 
@@ -61,12 +60,18 @@ mix package.android.runtime with_diode_nifs
 
 ## Releases
 
-Releases are created via GitHub Actions. Trigger the "Create Release" workflow manually:
+Releases are created via GitHub Actions and include:
+- OTP source reference and version
+- Elixir version
+- Build commit SHA
+- Included NIFs (exqlite by default)
 
-1. Go to Actions → Create Release → Run workflow
-2. The workflow reads OTP/Elixir versions from `.tool-versions`
-3. Creates tag `otp-{version}` and release page
-4. Builds and publishes:
+### Triggering a Release
+
+1. Go to Actions -> Create Release -> Run workflow
+2. The workflow reads versions from `.tool-versions`
+3. Builds Android and iOS runtimes in parallel
+4. Creates release with:
    - `android-otp-{version}.tar.gz`
    - `ios-otp-{version}.tar.gz`
 
@@ -76,10 +81,10 @@ OTP and Elixir versions are managed in `.tool-versions`:
 
 ```
 erlang 26.2.5.16
-elixir 1.16.3
+elixir 1.19.4-otp-26
 ```
 
-Update these versions and run the release workflow to create a new release.
+Each OTP major version has its own branch (e.g., `OTP-26`, `OTP-27`).
 
 ## Environment Variables
 
@@ -105,10 +110,15 @@ lib/
     └── package_ios_nif.ex
 
 scripts/                        # Build helper scripts
-patch/                          # OTP and OpenSSL patches
+patch/                          # OTP patches for mobile
 xcomp/                          # Cross-compilation configs
 stubs/                          # Toolchain wrappers
 ```
+
+## Included NIFs
+
+By default, releases include:
+- **exqlite** - SQLite3 NIF for Elixir
 
 ## License
 
