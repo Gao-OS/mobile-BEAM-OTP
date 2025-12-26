@@ -13,7 +13,7 @@ defmodule Mix.Tasks.Package.Android.Runtime do
       raise "Architecture '#{arch}' is invalid. Possible values: #{inspect(archs)}"
     end
 
-    File.write!("nif_env.sh", "#!/bin/bash\n")
+    File.write!("nif_env.sh", "#!/usr/bin/env bash\n")
 
     nif_env(architectures()[arch])
     |> Enum.sort()
