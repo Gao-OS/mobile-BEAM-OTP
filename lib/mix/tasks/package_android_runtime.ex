@@ -87,6 +87,8 @@ defmodule Mix.Tasks.Package.Android.Runtime do
           "#{otp_target(arch)}/lib/crypto/priv/lib/#{arch.name}/crypto.a"
         ]
 
+        year2038_flag = if Map.get(arch, :disable_year2038), do: ["--disable-year2038"], else: []
+
         cmd(
           ~w(
           cd #{otp_target(arch)} &&
@@ -98,7 +100,7 @@ defmodule Mix.Tasks.Package.Android.Runtime do
           --without-javac --without-odbc --without-wx --without-debugger --without-observer --without-cdv --without-et
           --xcomp-conf=xcomp/erl-xcomp-#{arch.xcomp}.conf
           --enable-static-nifs=#{Enum.join(nifs, ",")}
-        ) ++ ["CFLAGS=\"-Os -fPIC\""],
+        ) ++ year2038_flag ++ ["CFLAGS=\"-Os -fPIC\""],
           env
         )
 
@@ -125,6 +127,8 @@ defmodule Mix.Tasks.Package.Android.Runtime do
         | extra_nifs
       ]
 
+      year2038_flag = if Map.get(arch, :disable_year2038), do: ["--disable-year2038"], else: []
+
       cmd(
         ~w(
           cd #{otp_target(arch)} && ./otp_build configure
@@ -134,7 +138,7 @@ defmodule Mix.Tasks.Package.Android.Runtime do
           --without-javac --without-odbc --without-wx --without-debugger --without-observer --without-cdv --without-et
           --xcomp-conf=xcomp/erl-xcomp-#{arch.xcomp}.conf
           --enable-static-nifs=#{Enum.join(nifs, ",")}
-        ) ++ ["CFLAGS=\"-Os -fPIC\""],
+        ) ++ year2038_flag ++ ["CFLAGS=\"-Os -fPIC\""],
         env
       )
 

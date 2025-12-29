@@ -92,8 +92,8 @@ mix format
 ## Branch Strategy
 
 Each OTP major version has its own mainline branch:
-- `OTP-26` - Erlang/OTP 26.x
-- `OTP-27` - Erlang/OTP 27.x (future)
+- `OTP-27` - Erlang/OTP 27.x (current)
+- `OTP-26` - Erlang/OTP 26.x (legacy)
 
 ## CI/CD
 

@@ -80,11 +80,11 @@ Releases are created via GitHub Actions and include:
 OTP and Elixir versions are managed in `.tool-versions`:
 
 ```
-erlang 26.2.5.16
-elixir 1.19.4-otp-26
+erlang 27.3.4.6
+elixir 1.19.4-otp-27
 ```
 
-Each OTP major version has its own branch (e.g., `OTP-26`, `OTP-27`).
+Each OTP major version has its own branch (e.g., `OTP-27`, `OTP-28`).
 
 ## Environment Variables
 

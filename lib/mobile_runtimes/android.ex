@@ -16,7 +16,8 @@ defmodule MobileRuntimes.Android do
         name: "arm-unknown-linux-androideabi",
         android_name: "androideabi",
         android_type: "armeabi-v7a",
-        cflags: "--target=arm-linux-android#{@android_abi_version} -march=armv7-a -mfpu=neon"
+        cflags: "--target=arm-linux-android#{@android_abi_version} -march=armv7-a -mfpu=neon",
+        disable_year2038: true
       },
       "arm64" => %{
         xcomp: "arm64-android",

@@ -23,8 +23,8 @@ Follow-up TODOs: None
 ### I. OTP Version Branch Strategy
 
 All development MUST follow the OTP version branch naming convention:
-- Branch `OTP-26` targets Erlang/OTP 26.x releases
-- Branch `OTP-27` targets Erlang/OTP 27.x releases
+- Branch `OTP-27` targets Erlang/OTP 27.x releases (current)
+- Branch `OTP-26` targets Erlang/OTP 26.x releases (legacy)
 - The `OTP_TAG` environment variable MUST match the branch's target OTP version
 - Version upgrades MUST be made on the appropriate branch first before merging
 
@@ -47,7 +47,7 @@ behavior across all supported architectures.
 All builds MUST be reproducible given the same inputs:
 - Android builds MUST use Docker-based cross-compilation via dockercross images
 - iOS builds MUST use native Xcode/macOS toolchain
-- OTP source MUST be cloned from a pinned `OTP_TAG` (e.g., `OTP-26.2.5.16`)
+- OTP source MUST be cloned from a pinned `OTP_TAG` (e.g., `OTP-27.3.4.6`)
 - OpenSSL and other dependencies MUST use version-pinned builds
 - `SKIP_CLEAN_BUILD` is only for development iteration, never for releases
 
