@@ -1,27 +1,34 @@
 From: Mobile BEAM Build <build@mobile-beam.local>
-Subject: [PATCH] xcomp: Fix iOS DED linking for OTP 28 OSSF hardening
+Subject: [PATCH] xcomp: Fix iOS builds for OTP 28
 
-OTP 28 added OSSF (Open Source Security Foundation) security hardening
-flags. The configure script now adds -fstack-protector-strong to DED_LDFLAGS.
+Two fixes for iOS cross-compilation in OTP 28:
 
-This flag works when using the C compiler as linker (clang handles it
-and passes appropriate flags to ld), but fails when DED_LD is set to
-the raw linker (ld) which doesn't understand compiler flags.
+1. DED_LD/DED_LDFLAGS - OTP 28 added OSSF security hardening flags that
+   add -fstack-protector-strong to DED_LDFLAGS. This flag works with the
+   C compiler as linker driver but fails when DED_LD is the raw linker.
+   Fix: Comment out DED_LD and DED_LDFLAGS, letting configure auto-detect.
 
-The fix is to comment out DED_LD and DED_LDFLAGS in iOS xcomp configs,
-allowing configure to detect them automatically (using the C compiler
-as the linker driver, which is the modern approach).
-
-This matches the Android xcomp configs which don't set DED_LD/DED_LDFLAGS.
+2. runtime_tools native drivers - These build as shared libraries (.so)
+   that require ERTS symbols (driver_alloc, enif_make_atom, etc.) which
+   are not available during cross-compilation. These drivers are not
+   usable on iOS anyway (no dynamic loading support).
+   Fix: Add SKIP file to prevent building runtime_tools c_src.
 
 ---
+ lib/runtime_tools/c_src/SKIP            | 1 +
  xcomp/erl-xcomp-arm-ios.conf            | 4 ++--
  xcomp/erl-xcomp-arm64-ios.conf          | 4 ++--
  xcomp/erl-xcomp-arm64-iossimulator.conf | 4 ++--
  xcomp/erl-xcomp-host-iossimulator.conf  | 4 ++--
  xcomp/erl-xcomp-x86_64-iossimulator.conf| 4 ++--
- 5 files changed, 10 insertions(+), 10 deletions(-)
+ 6 files changed, 11 insertions(+), 10 deletions(-)
 
+diff --git a/lib/runtime_tools/c_src/SKIP b/lib/runtime_tools/c_src/SKIP
+new file mode 100644
+--- /dev/null
++++ b/lib/runtime_tools/c_src/SKIP
+@@ -0,0 +1 @@
++Dynamic drivers not supported on iOS (no dynamic loading)
 diff --git a/xcomp/erl-xcomp-arm-ios.conf b/xcomp/erl-xcomp-arm-ios.conf
 --- a/xcomp/erl-xcomp-arm-ios.conf
 +++ b/xcomp/erl-xcomp-arm-ios.conf
