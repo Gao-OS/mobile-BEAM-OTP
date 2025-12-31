@@ -37,6 +37,7 @@
 - [x] T007 Test `otp-zlib-ios.patch` applies cleanly to OTP 28.3 source via `patch -p1 --dry-run` - PATCH NO LONGER NEEDED
 - [x] T008 If patch fails: Identify the conflicting file and line numbers - zlib code restructured in OTP 28
 - [x] T009 If patch fails: Update `patch/otp-zlib-ios.patch` to match OTP 28 source - NOT NEEDED: __APPLE__ now handles iOS correctly
+- [x] T009a NEW PATCH NEEDED: Created `otp-ios-ded-ld.patch` for OTP 28 OSSF hardening fix (DED_LD linker issue)
 
 **Checkpoint**: Patches verified - build phase can begin
 
@@ -94,9 +95,9 @@
 
 ### Trigger Release for User Story 2
 
-- [ ] T029 [US2] Push all changes to `OTP-28` branch on remote
-- [ ] T030 [US2] Navigate to GitHub Actions and trigger "Create Release" workflow manually
-- [ ] T031 [US2] Monitor workflow execution for both Android and iOS jobs
+- [x] T029 [US2] Push all changes to `OTP-28` branch on remote (pushed 001-otp-28-release)
+- [x] T030 [US2] Navigate to GitHub Actions and trigger "Create Release" workflow manually (run ID: 20615058461)
+- [ ] T031 [US2] Monitor workflow execution for both Android and iOS jobs (IN PROGRESS)
 - [ ] T032 [US2] Verify release is created with tag `OTP-28.3`
 - [ ] T033 [P] [US2] Verify `android-otp-28.3.tar.gz` artifact is attached to release
 - [ ] T034 [P] [US2] Verify `ios-otp-28.3.tar.gz` artifact is attached to release
