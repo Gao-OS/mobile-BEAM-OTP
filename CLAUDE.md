@@ -59,7 +59,7 @@ mix format
 
 - `stubs/bin/` - Wrapper scripts for ar, ranlib, ld, libtool (handles archive repackaging for static linking)
 - `scripts/` - OpenSSL and Elixir installation scripts
-- `patch/` - OTP patches for mobile compilation (zlib iOS fix; space fix now upstream in OTP 27+)
+- `patch/` - OTP patches for mobile compilation (no patches needed for OTP 28+; all fixes are upstream)
 - `xcomp/` - OTP cross-compilation configuration templates (EEx)
 
 ## Environment Variables
@@ -102,3 +102,10 @@ GitHub Actions workflow (`create-release.yml`):
 - Caches OpenSSL builds between runs
 - Builds Android and iOS in parallel
 - Creates release with detailed build info after both complete
+
+## Active Technologies
+- Elixir 1.19.4-otp-28, Erlang/OTP 28.3 + Mix (build tool), Android NDK, Xcode, OpenSSL (static), EEx (templates) (001-otp-28-release)
+- N/A (build tooling only) (001-otp-28-release)
+
+## Recent Changes
+- 001-otp-28-release: Added Elixir 1.19.4-otp-28, Erlang/OTP 28.3 + Mix (build tool), Android NDK, Xcode, OpenSSL (static), EEx (templates)
