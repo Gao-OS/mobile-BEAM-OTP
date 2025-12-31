@@ -15,12 +15,12 @@ Two fixes for iOS cross-compilation in OTP 28:
    Fix: Add SKIP file to prevent building runtime_tools c_src.
 
 ---
- lib/runtime_tools/c_src/SKIP            | 1 +
- xcomp/erl-xcomp-arm-ios.conf            | 4 ++--
- xcomp/erl-xcomp-arm64-ios.conf          | 4 ++--
- xcomp/erl-xcomp-arm64-iossimulator.conf | 4 ++--
- xcomp/erl-xcomp-host-iossimulator.conf  | 4 ++--
- xcomp/erl-xcomp-x86_64-iossimulator.conf| 4 ++--
+ lib/runtime_tools/c_src/SKIP             | 1 +
+ xcomp/erl-xcomp-arm-ios.conf             | 4 ++--
+ xcomp/erl-xcomp-arm64-ios.conf           | 4 ++--
+ xcomp/erl-xcomp-arm64-iossimulator.conf  | 4 ++--
+ xcomp/erl-xcomp-host-iossimulator.conf   | 4 ++--
+ xcomp/erl-xcomp-x86_64-iossimulator.conf | 4 ++--
  6 files changed, 11 insertions(+), 10 deletions(-)
 
 diff --git a/lib/runtime_tools/c_src/SKIP b/lib/runtime_tools/c_src/SKIP

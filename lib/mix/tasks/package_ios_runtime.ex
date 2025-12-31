@@ -61,12 +61,13 @@ defmodule Mix.Tasks.Package.Ios.Runtime do
           "#{otp_target(arch)}/lib/crypto/priv/lib/#{arch.name}/crypto.a"
         ]
 
-        # First round build to generate headers and libs required to build nifs:
+        # First round: configure and build static NIF archives
+        # Step 1: Configure OTP (don't build yet - we need to build static NIFs first)
         cmd(
           ~w(
           cd #{otp_target(arch)} &&
           git clean -xdf &&
-          ./otp_build setup
+          ./otp_build configure
           --with-ssl=#{openssl_target(arch)}
           --disable-dynamic-ssl-lib
           --xcomp-conf=xcomp/erl-xcomp-#{arch.xcomp}.conf
@@ -75,6 +76,12 @@ defmodule Mix.Tasks.Package.Ios.Runtime do
           env
         )
 
+        # Step 2: Build static NIF archives for asn1 and crypto
+        # These are needed before running otp_build boot
+        cmd(~w(cd #{otp_target(arch)}/lib/asn1 && make static_lib), env)
+        cmd(~w(cd #{otp_target(arch)}/lib/crypto && make static_lib), env)
+
+        # Step 3: Now run the full build with static NIFs already in place
         cmd(~w(cd #{otp_target(arch)} && ./otp_build boot -a), env)
         cmd(~w(cd #{otp_target(arch)} && ./otp_build release -a), env)
       end
