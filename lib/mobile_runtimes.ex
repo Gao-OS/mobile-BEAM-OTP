@@ -88,14 +88,18 @@ defmodule MobileRuntimes do
   def apply_otp_patches() do
     patches = Path.wildcard("patch/otp-*.patch")
 
-    for patch <- patches do
-      IO.puts("Applying patch: #{patch}")
-      cmd("cd _build/otp && git apply ../../#{patch}")
-    end
+    if Enum.empty?(patches) do
+      IO.puts("No OTP patches to apply (all fixes upstream in this OTP version)")
+    else
+      for patch <- patches do
+        IO.puts("Applying patch: #{patch}")
+        cmd("cd _build/otp && git apply ../../#{patch}")
+      end
 
-    # Commit patches so clones inherit them (configure git user for CI environments)
-    cmd("cd _build/otp && git config user.email 'build@mobile-beam.local' && git config user.name 'Mobile BEAM Build'")
-    cmd("cd _build/otp && git add -A && git commit -m 'Apply mobile patches'")
+      # Commit patches so clones inherit them (configure git user for CI environments)
+      cmd("cd _build/otp && git config user.email 'build@mobile-beam.local' && git config user.name 'Mobile BEAM Build'")
+      cmd("cd _build/otp && git add -A && git commit -m 'Apply mobile patches'")
+    end
   end
 
   def erts_version() do

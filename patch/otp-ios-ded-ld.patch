@@ -1,0 +1,111 @@
+From: Mobile BEAM Build <build@mobile-beam.local>
+Subject: [PATCH] xcomp: Fix iOS builds for OTP 28
+
+Two fixes for iOS cross-compilation in OTP 28:
+
+1. DED_LD/DED_LDFLAGS - OTP 28 added OSSF security hardening flags that
+   add -fstack-protector-strong to DED_LDFLAGS. This flag works with the
+   C compiler as linker driver but fails when DED_LD is the raw linker.
+   Fix: Use $CC (C compiler) as DED_LD instead of $LD (raw linker), and
+   set proper DED_LDFLAGS with -undefined suppress for cross-compilation.
+
+2. runtime_tools native drivers - These require ERTS symbols that are not
+   available during cross-compilation, and dynamic loading isn't supported
+   on iOS anyway.
+   Fix: Add SKIP file for runtime_tools/c_src only.
+
+---
+ lib/runtime_tools/c_src/SKIP             | 1 +
+ xcomp/erl-xcomp-arm-ios.conf             | 4 ++--
+ xcomp/erl-xcomp-arm64-ios.conf           | 4 ++--
+ xcomp/erl-xcomp-arm64-iossimulator.conf  | 4 ++--
+ xcomp/erl-xcomp-host-iossimulator.conf   | 4 ++--
+ xcomp/erl-xcomp-x86_64-iossimulator.conf | 4 ++--
+ 6 files changed, 13 insertions(+), 8 deletions(-)
+
+diff --git a/lib/runtime_tools/c_src/SKIP b/lib/runtime_tools/c_src/SKIP
+new file mode 100644
+--- /dev/null
++++ b/lib/runtime_tools/c_src/SKIP
+@@ -0,0 +1 @@
++Dynamic drivers not supported on iOS (no dynamic loading)
+diff --git a/xcomp/erl-xcomp-arm-ios.conf b/xcomp/erl-xcomp-arm-ios.conf
+--- a/xcomp/erl-xcomp-arm-ios.conf
++++ b/xcomp/erl-xcomp-arm-ios.conf
+@@ -120,10 +120,10 @@ LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -lc++ -v"
+ ## *NOTE*! Either set all or none of the `DED_LD*' variables.
+
+ # * `DED_LD' - Linker for Dynamically loaded Erlang Drivers.
+-DED_LD=$LD
++DED_LD="$CC"
+
+ # * `DED_LDFLAGS' - Linker flags to use with `DED_LD'.
+-DED_LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -r -v"
++DED_LDFLAGS="-bundle -flat_namespace -undefined suppress"
+
+ # * `DED_LD_FLAG_RUNTIME_LIBRARY_PATH' - This flag should set runtime library
+ #   search path for shared libraries when linking with `DED_LD'.
+diff --git a/xcomp/erl-xcomp-arm64-ios.conf b/xcomp/erl-xcomp-arm64-ios.conf
+--- a/xcomp/erl-xcomp-arm64-ios.conf
++++ b/xcomp/erl-xcomp-arm64-ios.conf
+@@ -121,10 +121,10 @@ LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -lc++ -v"
+ ## *NOTE*! Either set all or none of the `DED_LD*' variables.
+
+ # * `DED_LD' - Linker for Dynamically loaded Erlang Drivers.
+-DED_LD=$LD
++DED_LD="$CC"
+
+ # * `DED_LDFLAGS' - Linker flags to use with `DED_LD'.
+-DED_LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -r -v"
++DED_LDFLAGS="-bundle -flat_namespace -undefined suppress"
+
+ # * `DED_LD_FLAG_RUNTIME_LIBRARY_PATH' - This flag should set runtime library
+ #   search path for shared libraries when linking with `DED_LD'.
+diff --git a/xcomp/erl-xcomp-arm64-iossimulator.conf b/xcomp/erl-xcomp-arm64-iossimulator.conf
+--- a/xcomp/erl-xcomp-arm64-iossimulator.conf
++++ b/xcomp/erl-xcomp-arm64-iossimulator.conf
+@@ -121,10 +121,10 @@ LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -lc++ -v"
+ ## *NOTE*! Either set all or none of the `DED_LD*' variables.
+
+ # * `DED_LD' - Linker for Dynamically loaded Erlang Drivers.
+-DED_LD=$LD
++DED_LD="$CC"
+
+ # * `DED_LDFLAGS' - Linker flags to use with `DED_LD'.
+-DED_LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -r -v"
++DED_LDFLAGS="-bundle -flat_namespace -undefined suppress"
+
+ # * `DED_LD_FLAG_RUNTIME_LIBRARY_PATH' - This flag should set runtime library
+ #   search path for shared libraries when linking with `DED_LD'.
+diff --git a/xcomp/erl-xcomp-host-iossimulator.conf b/xcomp/erl-xcomp-host-iossimulator.conf
+--- a/xcomp/erl-xcomp-host-iossimulator.conf
++++ b/xcomp/erl-xcomp-host-iossimulator.conf
+@@ -120,10 +120,10 @@ LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -lc++ -v"
+ ## *NOTE*! Either set all or none of the `DED_LD*' variables.
+
+ # * `DED_LD' - Linker for Dynamically loaded Erlang Drivers.
+-DED_LD=$LD
++DED_LD="$CC"
+
+ # * `DED_LDFLAGS' - Linker flags to use with `DED_LD'.
+-DED_LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -r -v"
++DED_LDFLAGS="-bundle -flat_namespace -undefined suppress"
+
+ # * `DED_LD_FLAG_RUNTIME_LIBRARY_PATH' - This flag should set runtime library
+ #   search path for shared libraries when linking with `DED_LD'.
+diff --git a/xcomp/erl-xcomp-x86_64-iossimulator.conf b/xcomp/erl-xcomp-x86_64-iossimulator.conf
+--- a/xcomp/erl-xcomp-x86_64-iossimulator.conf
++++ b/xcomp/erl-xcomp-x86_64-iossimulator.conf
+@@ -121,10 +121,10 @@ LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -lc++ -v"
+ ## *NOTE*! Either set all or none of the `DED_LD*' variables.
+
+ # * `DED_LD' - Linker for Dynamically loaded Erlang Drivers.
+-DED_LD=$LD
++DED_LD="$CC"
+
+ # * `DED_LDFLAGS' - Linker flags to use with `DED_LD'.
+-DED_LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -r -v"
++DED_LDFLAGS="-bundle -flat_namespace -undefined suppress"
+
+ # * `DED_LD_FLAG_RUNTIME_LIBRARY_PATH' - This flag should set runtime library
+ #   search path for shared libraries when linking with `DED_LD'.
