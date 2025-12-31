@@ -59,7 +59,7 @@ mix format
 
 - `stubs/bin/` - Wrapper scripts for ar, ranlib, ld, libtool (handles archive repackaging for static linking)
 - `scripts/` - OpenSSL and Elixir installation scripts
-- `patch/` - OTP patches for mobile compilation (zlib iOS fix, Makefile space fix)
+- `patch/` - OTP patches for mobile compilation (zlib iOS fix; space fix now upstream in OTP 27+)
 - `xcomp/` - OTP cross-compilation configuration templates (EEx)
 
 ## Environment Variables
