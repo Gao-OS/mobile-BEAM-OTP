@@ -92,7 +92,8 @@ mix format
 ## Branch Strategy
 
 Each OTP major version has its own mainline branch:
-- `OTP-27` - Erlang/OTP 27.x (current)
+- `OTP-28` - Erlang/OTP 28.x (current)
+- `OTP-27` - Erlang/OTP 27.x
 - `OTP-26` - Erlang/OTP 26.x (legacy)
 
 ## CI/CD
@@ -103,9 +104,9 @@ GitHub Actions workflow (`create-release.yml`):
 - Builds Android and iOS in parallel
 - Creates release with detailed build info after both complete
 
-## Active Technologies
-- Elixir 1.19.4-otp-28, Erlang/OTP 28.3 + Mix (build tool), Android NDK, Xcode, OpenSSL (static), EEx (templates) (001-otp-28-release)
-- N/A (build tooling only) (001-otp-28-release)
+## OTP 28 Notes
 
-## Recent Changes
-- 001-otp-28-release: Added Elixir 1.19.4-otp-28, Erlang/OTP 28.3 + Mix (build tool), Android NDK, Xcode, OpenSSL (static), EEx (templates)
+OTP 28 introduced OSSF (Open Source Security Foundation) security hardening flags that required iOS cross-compilation fixes:
+- `-fstack-protector-strong` added to linker flags
+- Fixed by using C compiler (`$CC`) as DED linker instead of raw linker (`$LD`)
+- DED_LDFLAGS set to `-bundle -flat_namespace -undefined suppress` for cross-compilation

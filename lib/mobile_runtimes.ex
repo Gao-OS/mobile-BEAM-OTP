@@ -66,7 +66,7 @@ defmodule MobileRuntimes do
   end
 
   def otp_tag() do
-    System.get_env("OTP_TAG", "OTP-27.3.4.6")
+    System.get_env("OTP_TAG", "OTP-28.3")
   end
 
   def ensure_otp() do
