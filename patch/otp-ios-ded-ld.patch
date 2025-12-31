@@ -6,13 +6,13 @@ Two fixes for iOS cross-compilation in OTP 28:
 1. DED_LD/DED_LDFLAGS - OTP 28 added OSSF security hardening flags that
    add -fstack-protector-strong to DED_LDFLAGS. This flag works with the
    C compiler as linker driver but fails when DED_LD is the raw linker.
-   Fix: Comment out DED_LD and DED_LDFLAGS, letting configure auto-detect.
+   Fix: Use $CC (C compiler) as DED_LD instead of $LD (raw linker), and
+   set proper DED_LDFLAGS with -undefined suppress for cross-compilation.
 
-2. runtime_tools native drivers - These build as shared libraries (.so)
-   that require ERTS symbols (driver_alloc, enif_make_atom, etc.) which
-   are not available during cross-compilation. These drivers are not
-   usable on iOS anyway (no dynamic loading support).
-   Fix: Add SKIP file to prevent building runtime_tools c_src.
+2. runtime_tools native drivers - These require ERTS symbols that are not
+   available during cross-compilation, and dynamic loading isn't supported
+   on iOS anyway.
+   Fix: Add SKIP file for runtime_tools/c_src only.
 
 ---
  lib/runtime_tools/c_src/SKIP             | 1 +
@@ -21,7 +21,7 @@ Two fixes for iOS cross-compilation in OTP 28:
  xcomp/erl-xcomp-arm64-iossimulator.conf  | 4 ++--
  xcomp/erl-xcomp-host-iossimulator.conf   | 4 ++--
  xcomp/erl-xcomp-x86_64-iossimulator.conf | 4 ++--
- 6 files changed, 11 insertions(+), 10 deletions(-)
+ 6 files changed, 13 insertions(+), 8 deletions(-)
 
 diff --git a/lib/runtime_tools/c_src/SKIP b/lib/runtime_tools/c_src/SKIP
 new file mode 100644
@@ -37,11 +37,11 @@ diff --git a/xcomp/erl-xcomp-arm-ios.conf b/xcomp/erl-xcomp-arm-ios.conf
 
  # * `DED_LD' - Linker for Dynamically loaded Erlang Drivers.
 -DED_LD=$LD
-+#DED_LD=
++DED_LD="$CC"
 
  # * `DED_LDFLAGS' - Linker flags to use with `DED_LD'.
 -DED_LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -r -v"
-+#DED_LDFLAGS=
++DED_LDFLAGS="-bundle -flat_namespace -undefined suppress"
 
  # * `DED_LD_FLAG_RUNTIME_LIBRARY_PATH' - This flag should set runtime library
  #   search path for shared libraries when linking with `DED_LD'.
@@ -53,11 +53,11 @@ diff --git a/xcomp/erl-xcomp-arm64-ios.conf b/xcomp/erl-xcomp-arm64-ios.conf
 
  # * `DED_LD' - Linker for Dynamically loaded Erlang Drivers.
 -DED_LD=$LD
-+#DED_LD=
++DED_LD="$CC"
 
  # * `DED_LDFLAGS' - Linker flags to use with `DED_LD'.
 -DED_LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -r -v"
-+#DED_LDFLAGS=
++DED_LDFLAGS="-bundle -flat_namespace -undefined suppress"
 
  # * `DED_LD_FLAG_RUNTIME_LIBRARY_PATH' - This flag should set runtime library
  #   search path for shared libraries when linking with `DED_LD'.
@@ -69,11 +69,11 @@ diff --git a/xcomp/erl-xcomp-arm64-iossimulator.conf b/xcomp/erl-xcomp-arm64-ios
 
  # * `DED_LD' - Linker for Dynamically loaded Erlang Drivers.
 -DED_LD=$LD
-+#DED_LD=
++DED_LD="$CC"
 
  # * `DED_LDFLAGS' - Linker flags to use with `DED_LD'.
 -DED_LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -r -v"
-+#DED_LDFLAGS=
++DED_LDFLAGS="-bundle -flat_namespace -undefined suppress"
 
  # * `DED_LD_FLAG_RUNTIME_LIBRARY_PATH' - This flag should set runtime library
  #   search path for shared libraries when linking with `DED_LD'.
@@ -85,11 +85,11 @@ diff --git a/xcomp/erl-xcomp-host-iossimulator.conf b/xcomp/erl-xcomp-host-iossi
 
  # * `DED_LD' - Linker for Dynamically loaded Erlang Drivers.
 -DED_LD=$LD
-+#DED_LD=
++DED_LD="$CC"
 
  # * `DED_LDFLAGS' - Linker flags to use with `DED_LD'.
 -DED_LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -r -v"
-+#DED_LDFLAGS=
++DED_LDFLAGS="-bundle -flat_namespace -undefined suppress"
 
  # * `DED_LD_FLAG_RUNTIME_LIBRARY_PATH' - This flag should set runtime library
  #   search path for shared libraries when linking with `DED_LD'.
@@ -101,11 +101,11 @@ diff --git a/xcomp/erl-xcomp-x86_64-iossimulator.conf b/xcomp/erl-xcomp-x86_64-i
 
  # * `DED_LD' - Linker for Dynamically loaded Erlang Drivers.
 -DED_LD=$LD
-+#DED_LD=
++DED_LD="$CC"
 
  # * `DED_LDFLAGS' - Linker flags to use with `DED_LD'.
 -DED_LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -r -v"
-+#DED_LDFLAGS=
++DED_LDFLAGS="-bundle -flat_namespace -undefined suppress"
 
  # * `DED_LD_FLAG_RUNTIME_LIBRARY_PATH' - This flag should set runtime library
  #   search path for shared libraries when linking with `DED_LD'.
