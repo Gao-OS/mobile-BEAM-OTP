@@ -1,43 +1,37 @@
-defmodule Mix.Tasks.E2e.Test do
+defmodule Mix.Tasks.E2e.Run do
   @shortdoc "Run E2E tests on mobile emulators/simulators"
 
   @moduledoc """
-  Runs end-to-end tests to validate BEAM runtime functionality on mobile platforms.
+  Runs E2E tests on already-built test applications.
+
+  Use `mix e2e.build` to build test apps first, then use this task to run them.
+  For a combined build-and-run workflow, use `mix e2e.test`.
 
   ## Usage
 
-      # Run tests on all architectures
-      mix e2e.test --all
+      # Run tests on specific architecture
+      mix e2e.run --arch android-x86_64
 
-      # Run tests on specific architectures
-      mix e2e.test --arch android-x86_64
-      mix e2e.test --arch android-arm64-v8a --arch ios-arm64-simulator
+      # Run with JUnit XML output
+      mix e2e.run --arch android-x86_64 --output-format junit --output results.xml
 
-      # With custom timeout (milliseconds)
-      mix e2e.test --arch android-x86_64 --timeout 600000
+      # Run on multiple architectures
+      mix e2e.run --arch android-x86_64 --arch ios-arm64-simulator
 
-      # Output JUnit XML to specific path
-      mix e2e.test --all --output _build/test-results/e2e-results.xml
-
-      # Skip test app build (use cached)
-      mix e2e.test --arch ios-arm64-simulator --skip-build
-
-      # Verbose output
-      mix e2e.test --arch android-x86_64 --verbose
-
-      # Keep emulator running after tests
-      mix e2e.test --arch ios-arm64-simulator --keep-alive
+      # Run on all architectures
+      mix e2e.run --all
 
   ## Options
 
-      --all           Run on all supported architectures
-      --arch          Target architecture (can be specified multiple times)
-      --timeout       Per-suite timeout in milliseconds (default: 300000)
-      --output        JUnit XML output path (default: _build/test-results/junit.xml)
-      --skip-build    Skip test app build step
-      --retries       Max infrastructure retries (default: 3)
-      --verbose       Enable verbose logging
-      --keep-alive    Keep emulator/simulator running after tests
+      --all             Run on all supported architectures
+      --arch            Target architecture (can be specified multiple times)
+      --timeout         Per-suite timeout in milliseconds (default: 300000)
+      --output          Output file path (default: _build/e2e/junit.xml)
+      --output-format   Output format: text, junit (default: text)
+      --retries         Max infrastructure retries (default: 3)
+      --verbose         Enable verbose logging
+      --keep-alive      Keep emulator/simulator running after tests
+      --help            Show this help
 
   ## Supported Architectures
 
@@ -64,7 +58,7 @@ defmodule Mix.Tasks.E2e.Test do
   alias MobileRuntimes.E2E.{Architecture, JUnitXML, Runner, TestReport}
 
   @default_timeout 300_000
-  @default_output "_build/test-results/junit.xml"
+  @default_output "_build/e2e/junit.xml"
   @default_retries 3
 
   @impl Mix.Task
@@ -87,22 +81,22 @@ defmodule Mix.Tasks.E2e.Test do
           arch: [:string, :keep],
           timeout: :integer,
           output: :string,
-          skip_build: :boolean,
+          output_format: :string,
           retries: :integer,
           verbose: :boolean,
           keep_alive: :boolean,
           help: :boolean
         ],
-        aliases: [h: :help, v: :verbose, a: :all, o: :output, t: :timeout]
+        aliases: [h: :help, v: :verbose, a: :all, o: :output, t: :timeout, f: :output_format]
       )
 
     cond do
       invalid != [] ->
         {key, _} = hd(invalid)
-        {:error, "Invalid option: #{key}. Run `mix help e2e.test` for usage."}
+        {:error, "Invalid option: #{key}. Run `mix help e2e.run` for usage."}
 
       Keyword.get(parsed, :help) ->
-        Mix.Task.run("help", ["e2e.test"])
+        Mix.Task.run("help", ["e2e.run"])
         exit(:normal)
 
       true ->
@@ -123,21 +117,27 @@ defmodule Mix.Tasks.E2e.Test do
           {:error, "No architecture specified. Use --arch or --all."}
       end
 
-    case archs do
-      {:ok, architectures} ->
-        {:ok,
-         %{
-           architectures: architectures,
-           timeout: Keyword.get(parsed, :timeout, @default_timeout),
-           output: Keyword.get(parsed, :output, @default_output),
-           skip_build: Keyword.get(parsed, :skip_build, false),
-           retries: Keyword.get(parsed, :retries, @default_retries),
-           verbose: Keyword.get(parsed, :verbose, false),
-           keep_alive: Keyword.get(parsed, :keep_alive, false)
-         }}
+    output_format =
+      case Keyword.get(parsed, :output_format, "text") do
+        "text" -> :text
+        "junit" -> :junit
+        other -> {:error, "Invalid output format: #{other}. Valid options: text, junit"}
+      end
 
-      {:error, _} = error ->
-        error
+    with {:ok, architectures} <- archs,
+         format when is_atom(format) <- output_format do
+      {:ok,
+       %{
+         architectures: architectures,
+         timeout: Keyword.get(parsed, :timeout, @default_timeout),
+         output: Keyword.get(parsed, :output, @default_output),
+         output_format: format,
+         retries: Keyword.get(parsed, :retries, @default_retries),
+         verbose: Keyword.get(parsed, :verbose, false),
+         keep_alive: Keyword.get(parsed, :keep_alive, false)
+       }}
+    else
+      {:error, _} = error -> error
     end
   end
 
@@ -165,17 +165,14 @@ defmodule Mix.Tasks.E2e.Test do
     Mix.shell().info("Running E2E tests for: #{format_arch_list(opts.architectures)}")
 
     if opts.verbose do
+      Logger.configure(level: :debug)
       Mix.shell().info("Options: #{inspect(opts)}")
     end
 
-    # TODO: Implement actual test execution in T024-T029
-    # This skeleton will be completed when Runner module is implemented
-
     case execute_tests(opts) do
       {:ok, report} ->
-        # Write JUnit XML
-        :ok = JUnitXML.write_to_file(report, opts.output)
-        Mix.shell().info("\nJUnit XML report: #{opts.output}")
+        # Output results based on format
+        output_results(report, opts)
 
         # Print summary
         Mix.shell().info(TestReport.summary(report))
@@ -204,7 +201,7 @@ defmodule Mix.Tasks.E2e.Test do
     runner_opts = [
       timeout: opts.timeout,
       retries: opts.retries,
-      skip_build: opts.skip_build,
+      skip_build: true,
       verbose: opts.verbose,
       keep_alive: opts.keep_alive
     ]
@@ -215,6 +212,22 @@ defmodule Mix.Tasks.E2e.Test do
 
       {:error, reason} ->
         {:error, reason}
+    end
+  end
+
+  defp output_results(report, opts) do
+    case opts.output_format do
+      :junit ->
+        # Ensure output directory exists
+        output_dir = Path.dirname(opts.output)
+        File.mkdir_p!(output_dir)
+
+        :ok = JUnitXML.write_to_file(report, opts.output)
+        Mix.shell().info("\nJUnit XML report: #{opts.output}")
+
+      :text ->
+        # Text output is handled by the summary
+        :ok
     end
   end
 end

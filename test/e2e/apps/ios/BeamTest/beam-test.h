@@ -44,6 +44,36 @@ long long beam_get_start_time(void);
  */
 long long beam_get_elapsed_time(long long start_time);
 
+/**
+ * Test result structure for execution tests.
+ */
+typedef struct {
+    bool passed;
+    const char* output;
+    const char* error;
+    long long time_ms;
+} BeamTestResult;
+
+/**
+ * Run arithmetic test (1 + 1 = 2).
+ */
+BeamTestResult beam_test_arithmetic(void);
+
+/**
+ * Run string operations test.
+ */
+BeamTestResult beam_test_string_ops(void);
+
+/**
+ * Run crypto SHA256 NIF test.
+ */
+BeamTestResult beam_test_crypto_sha256(void);
+
+/**
+ * Run SQLite NIF test.
+ */
+BeamTestResult beam_test_sqlite(void);
+
 #ifdef __cplusplus
 }
 #endif

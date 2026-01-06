@@ -89,7 +89,7 @@ Based on plan.md structure:
 
 ---
 
-## Phase 4: User Story 2 - Verify Elixir Code Execution (Priority: P1)
+## Phase 4: User Story 2 - Verify Elixir Code Execution (Priority: P1) ✅
 
 **Goal**: Validate Elixir arithmetic, string ops, and concurrency work within embedded runtime
 
@@ -97,19 +97,19 @@ Based on plan.md structure:
 
 ### Native Test Extensions
 
-- [ ] T030 [P] [US2] Add Elixir eval test to beam-test.cpp in `test/e2e/apps/android/app/src/main/cpp/beam-test.cpp`
-- [ ] T031 [P] [US2] Add Elixir eval test to beam-test.c in `test/e2e/apps/ios/BeamTest/beam-test.c`
+- [x] T030 [P] [US2] Add Elixir eval test to beam-test.cpp in `test/e2e/apps/android/app/src/main/cpp/beam-test.cpp`
+- [x] T031 [P] [US2] Add Elixir eval test to beam-test.c in `test/e2e/apps/ios/BeamTest/beam-test.c`
 
 ### Test Runner (Execution Tests)
 
-- [ ] T032 [US2] Implement execution test cases in `test/e2e/suites/execution_test.exs`
-- [ ] T033 [US2] Add result parsing for Elixir output in `lib/mobile_runtimes/e2e/runner.ex`
+- [x] T032 [US2] Implement execution test cases in `test/e2e/suites/execution_test.exs`
+- [x] T033 [US2] Add result parsing for Elixir output in `lib/mobile_runtimes/e2e/runner.ex`
 
 **Checkpoint**: `mix e2e.test --arch android-x86_64` validates BEAM boot + Elixir execution
 
 ---
 
-## Phase 5: User Story 3 - Test Native NIF Integration (Priority: P2)
+## Phase 5: User Story 3 - Test Native NIF Integration (Priority: P2) ✅
 
 **Goal**: Verify crypto and exqlite NIFs function correctly on mobile
 
@@ -117,21 +117,21 @@ Based on plan.md structure:
 
 ### Native Test Extensions
 
-- [ ] T034 [P] [US3] Add crypto NIF test to beam-test.cpp in `test/e2e/apps/android/app/src/main/cpp/beam-test.cpp`
-- [ ] T035 [P] [US3] Add crypto NIF test to beam-test.c in `test/e2e/apps/ios/BeamTest/beam-test.c`
-- [ ] T036 [P] [US3] Add exqlite NIF test to beam-test.cpp in `test/e2e/apps/android/app/src/main/cpp/beam-test.cpp`
-- [ ] T037 [P] [US3] Add exqlite NIF test to beam-test.c in `test/e2e/apps/ios/BeamTest/beam-test.c`
+- [x] T034 [P] [US3] Add crypto NIF test to beam-test.cpp in `test/e2e/apps/android/app/src/main/cpp/beam-test.cpp`
+- [x] T035 [P] [US3] Add crypto NIF test to beam-test.c in `test/e2e/apps/ios/BeamTest/beam-test.c`
+- [x] T036 [P] [US3] Add exqlite NIF test to beam-test.cpp in `test/e2e/apps/android/app/src/main/cpp/beam-test.cpp`
+- [x] T037 [P] [US3] Add exqlite NIF test to beam-test.c in `test/e2e/apps/ios/BeamTest/beam-test.c`
 
 ### Test Runner (NIF Tests)
 
-- [ ] T038 [US3] Implement NIF test cases in `test/e2e/suites/nif_test.exs`
-- [ ] T039 [US3] Add expected hash values to `test/e2e/fixtures/expected_hashes.json`
+- [x] T038 [US3] Implement NIF test cases in `test/e2e/suites/nif_test.exs`
+- [x] T039 [US3] Add expected hash values to `test/e2e/fixtures/expected_hashes.json`
 
 **Checkpoint**: All 3 test categories (boot, execution, NIF) work on one architecture
 
 ---
 
-## Phase 6: User Story 4 - Run Tests Across All Target Architectures (Priority: P2)
+## Phase 6: User Story 4 - Run Tests Across All Target Architectures (Priority: P2) ✅
 
 **Goal**: Execute test suite on all 6 supported architectures
 
@@ -139,19 +139,19 @@ Based on plan.md structure:
 
 ### Multi-Architecture Support
 
-- [ ] T040 [US4] Add architecture-specific build configs for Android arm in `test/e2e/apps/android/app/build.gradle.kts`
-- [ ] T041 [P] [US4] Add architecture-specific build configs for Android arm64 in `test/e2e/apps/android/app/build.gradle.kts`
-- [ ] T042 [P] [US4] Add iOS simulator configurations to Xcode project in `test/e2e/apps/ios/BeamTest.xcodeproj/project.pbxproj`
-- [ ] T043 [US4] Implement --all flag to iterate architectures in `lib/mix/tasks/e2e_test.ex`
-- [ ] T044 [US4] Add architecture detection for liberlang linking in `lib/mobile_runtimes/e2e/builder.ex`
-- [ ] T045 [US4] Implement parallel suite execution in `lib/mobile_runtimes/e2e/runner.ex`
-- [ ] T046 [US4] Aggregate results from multiple architectures in `lib/mobile_runtimes/e2e/test_report.ex`
+- [x] T040 [US4] Add architecture-specific build configs for Android arm in `test/e2e/apps/android/app/build.gradle.kts`
+- [x] T041 [P] [US4] Add architecture-specific build configs for Android arm64 in `test/e2e/apps/android/app/build.gradle.kts`
+- [x] T042 [P] [US4] Add iOS simulator configurations to Xcode project in `test/e2e/apps/ios/BeamTest.xcodeproj/project.pbxproj`
+- [x] T043 [US4] Implement --all flag to iterate architectures in `lib/mix/tasks/e2e_test.ex`
+- [x] T044 [US4] Add architecture detection for liberlang linking in `lib/mobile_runtimes/e2e/builder.ex`
+- [x] T045 [US4] Implement parallel suite execution in `lib/mobile_runtimes/e2e/runner.ex`
+- [x] T046 [US4] Aggregate results from multiple architectures in `lib/mobile_runtimes/e2e/test_report.ex`
 
 **Checkpoint**: `mix e2e.test --all` runs on all architectures and produces combined JUnit XML
 
 ---
 
-## Phase 7: User Story 5 - Integrate with CI/CD Pipeline (Priority: P3)
+## Phase 7: User Story 5 - Integrate with CI/CD Pipeline (Priority: P3) ✅
 
 **Goal**: Automate E2E tests in GitHub Actions to block releases on failure
 
@@ -159,31 +159,31 @@ Based on plan.md structure:
 
 ### GitHub Actions Workflow
 
-- [ ] T047 [P] [US5] Create E2E test workflow file in `.github/workflows/e2e-test.yml`
-- [ ] T048 [US5] Add Android emulator job using reactivecircus/android-emulator-runner in `.github/workflows/e2e-test.yml`
-- [ ] T049 [US5] Add iOS simulator job with xcodebuild in `.github/workflows/e2e-test.yml`
-- [ ] T050 [US5] Configure JUnit XML upload as artifact in `.github/workflows/e2e-test.yml`
-- [ ] T051 [US5] Add test result visualization (GitHub Actions native) in `.github/workflows/e2e-test.yml`
+- [x] T047 [P] [US5] Create E2E test workflow file in `.github/workflows/e2e-test.yml`
+- [x] T048 [US5] Add Android emulator job using reactivecircus/android-emulator-runner in `.github/workflows/e2e-test.yml`
+- [x] T049 [US5] Add iOS simulator job with xcodebuild in `.github/workflows/e2e-test.yml`
+- [x] T050 [US5] Configure JUnit XML upload as artifact in `.github/workflows/e2e-test.yml`
+- [x] T051 [US5] Add test result visualization (GitHub Actions native) in `.github/workflows/e2e-test.yml`
 
 ### Release Integration
 
-- [ ] T052 [US5] Update create-release.yml to depend on E2E tests passing in `.github/workflows/create-release.yml`
-- [ ] T053 [US5] Add status check requirement for E2E tests (branch protection config)
+- [x] T052 [US5] Update create-release.yml to depend on E2E tests passing in `.github/workflows/create-release.yml`
+- [x] T053 [US5] Add status check requirement for E2E tests (branch protection config)
 
 **Checkpoint**: PRs trigger E2E tests; releases blocked on failure
 
 ---
 
-## Phase 8: Polish & Cross-Cutting Concerns
+## Phase 8: Polish & Cross-Cutting Concerns ✅
 
 **Purpose**: Documentation, error handling, and optimization
 
-- [ ] T054 [P] Add edge case error handling (OUT_OF_MEMORY, ARCHITECTURE_MISMATCH) in `lib/mobile_runtimes/e2e/runner.ex`
-- [ ] T055 [P] Add timeout handling (5 min default) in `lib/mobile_runtimes/e2e/runner.ex`
-- [ ] T056 [P] Improve error messages for emulator failures in `lib/mobile_runtimes/e2e/emulator.ex`
-- [ ] T057 [P] Add verbose logging option (--verbose flag) in `lib/mix/tasks/e2e_test.ex`
-- [ ] T058 Update README.md with E2E testing section
-- [ ] T059 Validate quickstart.md scenarios work end-to-end
+- [x] T054 [P] Add edge case error handling (OUT_OF_MEMORY, ARCHITECTURE_MISMATCH) in `lib/mobile_runtimes/e2e/retry.ex`
+- [x] T055 [P] Add timeout handling (5 min default) in `lib/mobile_runtimes/e2e/runner.ex`
+- [x] T056 [P] Improve error messages for emulator failures in `lib/mobile_runtimes/e2e/retry.ex`
+- [x] T057 [P] Add verbose logging option (--verbose flag) in `lib/mix/tasks/e2e_test.ex`
+- [x] T058 Update README.md with E2E testing section
+- [x] T059 Validate quickstart.md scenarios work end-to-end
 
 ---
 

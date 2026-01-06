@@ -60,11 +60,34 @@ defmodule MobileRuntimes.E2E.Runner do
       end
     end
 
-    # Run tests for each architecture
+    # Group architectures by platform for parallel execution
+    # Android and iOS can run in parallel, but same-platform tests run sequentially
+    # (can't run multiple Android emulators or iOS simulators simultaneously)
+    android_archs = Enum.filter(architectures, &(Architecture.platform(&1) == :android))
+    ios_archs = Enum.filter(architectures, &(Architecture.platform(&1) == :ios))
+
+    # Run Android and iOS tests in parallel
+    tasks = []
+
+    tasks =
+      if android_archs != [] do
+        [Task.async(fn -> run_platform_tests(android_archs, timeout, retries, keep_alive) end) | tasks]
+      else
+        tasks
+      end
+
+    tasks =
+      if ios_archs != [] do
+        [Task.async(fn -> run_platform_tests(ios_archs, timeout, retries, keep_alive) end) | tasks]
+      else
+        tasks
+      end
+
+    # Collect results from all tasks
     results =
-      Enum.map(architectures, fn arch ->
-        run_architecture(arch, timeout, retries, keep_alive)
-      end)
+      tasks
+      |> Enum.map(&Task.await(&1, :infinity))
+      |> List.flatten()
 
     {:ok, results}
   catch
@@ -81,6 +104,14 @@ defmodule MobileRuntimes.E2E.Runner do
       {:ok, [suite]} -> {:ok, suite}
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  # Run tests for architectures within a single platform sequentially
+  # (can't run multiple emulators/simulators of the same platform simultaneously)
+  defp run_platform_tests(architectures, timeout, retries, keep_alive) do
+    Enum.map(architectures, fn arch ->
+      run_architecture(arch, timeout, retries, keep_alive)
+    end)
   end
 
   defp build_test_apps(architectures) do

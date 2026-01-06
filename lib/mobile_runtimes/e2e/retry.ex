@@ -96,4 +96,57 @@ defmodule MobileRuntimes.E2E.Retry do
   def infrastructure_error(reason) do
     {:error, :infrastructure, reason}
   end
+
+  @doc """
+  Classifies an error and returns appropriate retry behavior.
+
+  Returns `{:retry, classified_reason}` for retriable errors,
+  or `{:no_retry, reason}` for non-retriable errors.
+  """
+  @spec classify_error(term()) :: {:retry, term()} | {:no_retry, term()}
+  def classify_error(reason) do
+    case reason do
+      # Infrastructure errors - should retry
+      :emulator_timeout -> {:retry, :emulator_timeout}
+      :emulator_crash -> {:retry, :emulator_crash}
+      :simulator_timeout -> {:retry, :simulator_timeout}
+      :simulator_crash -> {:retry, :simulator_crash}
+      :adb_connection_failed -> {:retry, :adb_connection_failed}
+      :xcrun_failed -> {:retry, :xcrun_failed}
+      {:install_failed, _} -> {:retry, reason}
+      {:app_start_failed, _} -> {:retry, reason}
+      :connection_refused -> {:retry, :connection_refused}
+      :network_timeout -> {:retry, :network_timeout}
+
+      # Non-retriable errors
+      :out_of_memory -> {:no_retry, {:fatal, :out_of_memory, "System ran out of memory"}}
+      :architecture_mismatch -> {:no_retry, {:fatal, :architecture_mismatch, "App built for wrong architecture"}}
+      :invalid_architecture -> {:no_retry, {:config, :invalid_architecture, "Invalid architecture specified"}}
+      :test_app_not_found -> {:no_retry, {:config, :test_app_not_found, "Test app not built. Run mix e2e.build first"}}
+      :ndk_not_found -> {:no_retry, {:config, :ndk_not_found, "Android NDK not found. Set ANDROID_NDK_HOME"}}
+      :xcode_not_found -> {:no_retry, {:config, :xcode_not_found, "Xcode not found. Install Xcode and command line tools"}}
+      {:test_failed, _} -> {:no_retry, reason}
+
+      # Unknown errors - don't retry by default
+      _ -> {:no_retry, reason}
+    end
+  end
+
+  @doc """
+  Formats an error for user-friendly display.
+  """
+  @spec format_error(term()) :: String.t()
+  def format_error(reason) do
+    case reason do
+      {:fatal, type, message} -> "[FATAL] #{type}: #{message}"
+      {:config, type, message} -> "[CONFIG] #{type}: #{message}"
+      {:test_failed, details} -> "[TEST] Test failed: #{inspect(details)}"
+      :emulator_timeout -> "[INFRA] Android emulator timed out"
+      :emulator_crash -> "[INFRA] Android emulator crashed"
+      :simulator_timeout -> "[INFRA] iOS simulator timed out"
+      :simulator_crash -> "[INFRA] iOS simulator crashed"
+      :max_retries_exceeded -> "[INFRA] Maximum retries exceeded"
+      other -> "[ERROR] #{inspect(other)}"
+    end
+  end
 end

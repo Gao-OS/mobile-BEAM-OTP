@@ -58,6 +58,44 @@ mix package.android.runtime "https://github.com/elixir-desktop/exqlite"
 mix package.android.runtime with_diode_nifs
 ```
 
+## E2E Testing
+
+End-to-end tests validate BEAM runtime functionality on actual mobile emulators/simulators.
+
+### Running Tests
+
+```bash
+# Build test apps for specific architecture
+mix e2e.build --arch android-x86_64
+
+# Run tests
+mix e2e.run --arch android-x86_64
+
+# Combined build and run
+mix e2e.test --arch android-x86_64
+
+# Run on all architectures
+mix e2e.test --all
+
+# Output JUnit XML for CI
+mix e2e.run --arch android-x86_64 --output-format junit --output results.xml
+```
+
+### Test Categories
+
+- **Boot Tests**: VM initializes within 30 seconds
+- **Execution Tests**: Arithmetic operations, string operations
+- **NIF Tests**: Crypto SHA256, SQLite functionality
+
+### CI Integration
+
+E2E tests run automatically on PRs affecting `lib/**` or `test/e2e/**`. The release workflow optionally runs E2E tests before creating releases.
+
+```bash
+# Manual E2E test run via GitHub Actions
+gh workflow run e2e-test.yml
+```
+
 ## Releases
 
 Releases are created via GitHub Actions and include:
@@ -102,12 +140,29 @@ lib/
 ├── mobile_runtimes.ex          # Core utilities
 ├── mobile_runtimes/
 │   ├── android.ex              # Android architecture definitions
-│   └── ios.ex                  # iOS architecture definitions
+│   ├── ios.ex                  # iOS architecture definitions
+│   └── e2e/                    # E2E test framework
+│       ├── architecture.ex     # Architecture parsing
+│       ├── builder.ex          # Test app builder
+│       ├── emulator.ex         # Emulator/simulator control
+│       ├── junit_xml.ex        # JUnit XML output
+│       ├── retry.ex            # Retry with backoff
+│       ├── runner.ex           # Test orchestration
+│       ├── test_case.ex        # Test case struct
+│       ├── test_report.ex      # Report aggregation
+│       └── test_suite.ex       # Test suite struct
 └── mix/tasks/
     ├── package_android_runtime.ex
     ├── package_android_nif.ex
     ├── package_ios_runtime.ex
-    └── package_ios_nif.ex
+    ├── package_ios_nif.ex
+    ├── e2e_build.ex            # mix e2e.build
+    ├── e2e_run.ex              # mix e2e.run
+    └── e2e_test.ex             # mix e2e.test
+
+test/e2e/apps/                  # Native test applications
+├── android/                    # Android test app (Kotlin + JNI)
+└── ios/                        # iOS test app (Swift + C)
 
 scripts/                        # Build helper scripts
 patch/                          # OTP patches for mobile

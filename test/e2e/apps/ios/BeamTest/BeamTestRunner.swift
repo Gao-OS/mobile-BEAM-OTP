@@ -76,11 +76,10 @@ class BeamTestRunner {
 
         let bootTestStatus = isInitialized ? "passed" : "failed"
         let bootTestError = isInitialized ? nil : "BEAM VM failed to initialize (code: \(initResult))"
-        let overallStatus = isInitialized ? "passed" : "failed"
+        var allPassed = isInitialized
 
         var json = "{\n"
         json += "  \"architecture\": \"\(architecture)\",\n"
-        json += "  \"status\": \"\(overallStatus)\",\n"
         json += "  \"tests\": [\n"
 
         // Boot test
@@ -102,16 +101,92 @@ class BeamTestRunner {
         }
 
         json += "\n"
-        json += "    }\n"
+        json += "    }"
 
-        // TODO: Add execution and NIF tests in T030-T037
-        // For MVP (US1), only boot test is required
+        // Execution tests (US2)
+        if isInitialized {
+            // Arithmetic test
+            json += ",\n"
+            let arithResult = beam_test_arithmetic()
+            json += buildTestJson(
+                id: "execution.arithmetic",
+                category: "execution",
+                name: "Arithmetic operations work",
+                result: arithResult
+            )
+            allPassed = allPassed && arithResult.passed
 
-        json += "  ],\n"
-        json += "  \"total_time_ms\": \(elapsed)\n"
+            // String operations test
+            json += ",\n"
+            let strResult = beam_test_string_ops()
+            json += buildTestJson(
+                id: "execution.string_ops",
+                category: "execution",
+                name: "String operations work",
+                result: strResult
+            )
+            allPassed = allPassed && strResult.passed
+
+            // NIF tests (US3)
+            // Crypto SHA256 test
+            json += ",\n"
+            let cryptoResult = beam_test_crypto_sha256()
+            json += buildNifTestJson(
+                id: "nif.crypto_sha256",
+                name: "Crypto SHA256 produces correct hash",
+                result: cryptoResult
+            )
+            allPassed = allPassed && cryptoResult.passed
+
+            // SQLite test
+            json += ",\n"
+            let sqliteResult = beam_test_sqlite()
+            json += buildNifTestJson(
+                id: "nif.sqlite",
+                name: "SQLite NIF is functional",
+                result: sqliteResult
+            )
+            allPassed = allPassed && sqliteResult.passed
+        }
+
+        json += "\n  ],\n"
+
+        let overallStatus = allPassed ? "passed" : "failed"
+        json += "  \"status\": \"\(overallStatus)\",\n"
+
+        let totalTime = beam_get_elapsed_time(startTime)
+        json += "  \"total_time_ms\": \(totalTime)\n"
         json += "}"
 
         return json
+    }
+
+    /// Build JSON for a single test result.
+    private func buildTestJson(id: String, category: String, name: String, result: BeamTestResult) -> String {
+        var json = "    {\n"
+        json += "      \"id\": \"\(id)\",\n"
+        json += "      \"category\": \"\(category)\",\n"
+        json += "      \"name\": \"\(name)\",\n"
+        json += "      \"status\": \"\(result.passed ? "passed" : "failed")\",\n"
+        json += "      \"time_ms\": \(result.time_ms)"
+
+        if !result.passed, let error = result.error {
+            json += ",\n"
+            json += "      \"error_message\": \"\(escapeJson(String(cString: error)))\""
+        }
+
+        if let output = result.output {
+            json += ",\n"
+            json += "      \"stdout\": \"\(escapeJson(String(cString: output)))\""
+        }
+
+        json += "\n    }"
+        return json
+    }
+
+    /// Build JSON for a NIF test result.
+    private func buildNifTestJson(id: String, name: String, result: BeamTestResult) -> String {
+        return buildTestJson(id: id, category: "nif", name: name, result: result)
     }
 
     /// Escape special characters for JSON.
