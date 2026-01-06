@@ -110,3 +110,9 @@ OTP 28 introduced OSSF (Open Source Security Foundation) security hardening flag
 - `-fstack-protector-strong` added to linker flags
 - Fixed by using C compiler (`$CC`) as DED linker instead of raw linker (`$LD`)
 - DED_LDFLAGS set to `-bundle -flat_namespace -undefined suppress` for cross-compilation
+
+## Active Technologies
+- N/A (test artifacts are ephemeral) (001-e2e-runtime-testing)
+
+## Recent Changes
+- 001-e2e-runtime-testing: Added N/A (test artifacts are ephemeral)
