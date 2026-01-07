@@ -80,26 +80,67 @@ defmodule MobileRuntimes.E2E.Builder do
       |> Enum.map(&arch_to_gradle_flavor/1)
       |> Enum.uniq()
 
-    # Build each flavor
-    Enum.reduce_while(flavors, :ok, fn flavor, _acc ->
-      task = "assemble#{String.capitalize(flavor)}Debug"
-      Logger.info("Running: ./gradlew #{task}")
+    # Ensure gradle wrapper exists, generate if needed
+    gradlew_path = Path.join(@android_app_dir, "gradlew")
 
-      case System.cmd(
-             "./gradlew",
-             [task, "--no-daemon"],
-             cd: @android_app_dir,
-             stderr_to_stdout: true,
-             env: android_build_env()
-           ) do
-        {_output, 0} ->
-          {:cont, :ok}
+    final_cmd =
+      cond do
+        File.exists?(gradlew_path) ->
+          "./gradlew"
 
-        {error, code} ->
-          Logger.error("Gradle build failed (exit #{code}): #{error}")
-          {:halt, {:error, error}}
+        gradle_cmd = find_gradle_command() ->
+          # Generate wrapper using system gradle
+          Logger.info("Generating Gradle wrapper...")
+          case System.cmd(gradle_cmd, ["wrapper", "--gradle-version", "8.5"],
+                 cd: @android_app_dir,
+                 stderr_to_stdout: true
+               ) do
+            {_, 0} ->
+              if File.exists?(gradlew_path), do: "./gradlew", else: gradle_cmd
+
+            {error, _} ->
+              Logger.warning("Failed to generate wrapper: #{error}")
+              gradle_cmd
+          end
+
+        true ->
+          Logger.error("Neither gradlew nor gradle found. Install Gradle or add wrapper to project.")
+          nil
       end
-    end)
+
+    if is_nil(final_cmd) do
+      {:error, "Gradle not found"}
+    else
+      # Build each flavor
+      Enum.reduce_while(flavors, :ok, fn flavor, _acc ->
+        task = "assemble#{String.capitalize(flavor)}Debug"
+        Logger.info("Running: #{final_cmd} #{task}")
+
+        case System.cmd(
+               final_cmd,
+               [task, "--no-daemon"],
+               cd: @android_app_dir,
+               stderr_to_stdout: true,
+               env: android_build_env()
+             ) do
+          {_output, 0} ->
+            {:cont, :ok}
+
+          {error, code} ->
+            Logger.error("Gradle build failed (exit #{code}): #{error}")
+            {:halt, {:error, error}}
+        end
+      end)
+    end
+  end
+
+  defp find_gradle_command do
+    # Try to find gradle in common locations
+    cond do
+      System.find_executable("gradle") -> "gradle"
+      File.exists?("/opt/gradle/bin/gradle") -> "/opt/gradle/bin/gradle"
+      true -> nil
+    end
   end
 
   defp arch_to_gradle_flavor(arch) do
@@ -125,12 +166,14 @@ defmodule MobileRuntimes.E2E.Builder do
 
   defp run_xcode_build(archs) do
     # Determine destination based on architecture
+    # Use generic destinations to avoid hardcoding simulator names
     destination =
       cond do
-        :ios_arm64_simulator in archs -> "platform=iOS Simulator,name=iPhone 15"
-        :ios_x86_64_simulator in archs -> "platform=iOS Simulator,name=iPhone 15"
         :ios_arm64 in archs -> "generic/platform=iOS"
-        true -> "platform=iOS Simulator,name=iPhone 15"
+        :ios_arm64_simulator in archs or :ios_x86_64_simulator in archs ->
+          # Find an available iPhone or iPad simulator
+          find_available_simulator() || "generic/platform=iOS Simulator"
+        true -> "generic/platform=iOS Simulator"
       end
 
     Logger.info("Running: xcodebuild for destination '#{destination}'")
@@ -159,6 +202,40 @@ defmodule MobileRuntimes.E2E.Builder do
       {error, code} ->
         Logger.error("xcodebuild failed (exit #{code}): #{error}")
         {:error, error}
+    end
+  end
+
+  defp find_available_simulator do
+    # Use xcrun simctl to find an available iOS simulator
+    case System.cmd("xcrun", ["simctl", "list", "devices", "available", "-j"], stderr_to_stdout: true) do
+      {output, 0} ->
+        case Jason.decode(output) do
+          {:ok, %{"devices" => devices}} ->
+            # Find first available iPhone or iPad simulator
+            devices
+            |> Enum.flat_map(fn {runtime, device_list} ->
+              if String.contains?(runtime, "iOS") do
+                Enum.map(device_list, fn device ->
+                  %{name: device["name"], udid: device["udid"], runtime: runtime}
+                end)
+              else
+                []
+              end
+            end)
+            |> Enum.find(fn d ->
+              String.starts_with?(d.name, "iPhone") or String.starts_with?(d.name, "iPad")
+            end)
+            |> case do
+              nil -> nil
+              device -> "platform=iOS Simulator,id=#{device.udid}"
+            end
+
+          _ ->
+            nil
+        end
+
+      _ ->
+        nil
     end
   end
 
