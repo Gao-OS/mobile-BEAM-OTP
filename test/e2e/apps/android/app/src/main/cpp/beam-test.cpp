@@ -26,7 +26,7 @@
 // These are defined in liberlang.a
 extern "C" {
     int erl_start(int argc, char *argv[]);
-    void erl_stop(void);
+    // Note: erl_stop doesn't exist in liberlang.a, BEAM cleanup is handled by erl_exit
 
     // EI (Erlang Interface) functions for term manipulation
     typedef void* ETERM;
@@ -419,6 +419,8 @@ Java_io_beamtest_MainActivity_runTests(
 
 /**
  * Cleanup BEAM runtime.
+ * Note: The BEAM VM doesn't have a clean stop API - erl_exit terminates the process.
+ * For embedded use, we just mark as uninitialized.
  */
 JNIEXPORT void JNICALL
 Java_io_beamtest_MainActivity_beamCleanup(
@@ -426,9 +428,9 @@ Java_io_beamtest_MainActivity_beamCleanup(
     jobject thiz
 ) {
     if (g_beam_initialized) {
-        LOGI("Stopping BEAM");
-        erl_stop();
+        LOGI("BEAM cleanup (marking as uninitialized)");
         g_beam_initialized = false;
+        // Note: There's no clean way to stop BEAM - erl_exit() terminates the process
     }
 }
 

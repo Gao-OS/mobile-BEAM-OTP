@@ -210,12 +210,17 @@ jobs:
 
       - name: Boot iOS Simulator
         run: |
-          # Find an iPhone 15 Pro simulator or fallback
-          SIMULATOR_ID=$(xcrun simctl list devices available | grep -E "iPhone 15 Pro|iPhone 14 Pro|iPhone 13 Pro" | head -1 | grep -oE "[A-F0-9-]{36}")
+          # Find any iPhone Pro simulator (17 Pro, 16 Pro, 15 Pro, etc.)
+          SIMULATOR_ID=$(xcrun simctl list devices available | grep -E "iPhone [0-9]+ Pro[^M]" | head -1 | grep -oE "[A-F0-9-]{36}")
           if [ -z "$SIMULATOR_ID" ]; then
-            # Create a new simulator if none exists
-            SIMULATOR_ID=$(xcrun simctl create "E2E Test iPhone" "iPhone 15 Pro")
+            # Fallback: any iPhone simulator
+            SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone" | head -1 | grep -oE "[A-F0-9-]{36}")
           fi
+          if [ -z "$SIMULATOR_ID" ]; then
+            echo "Error: No iPhone simulator found"
+            exit 1
+          fi
+          echo "Found simulator: $SIMULATOR_ID"
           echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
           xcrun simctl boot "$SIMULATOR_ID" || true
           # Wait for simulator to be ready
