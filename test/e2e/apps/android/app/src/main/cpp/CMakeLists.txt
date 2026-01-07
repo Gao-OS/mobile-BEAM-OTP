@@ -5,8 +5,9 @@ cmake_minimum_required(VERSION 3.22.1)
 project("beamtest")
 
 # Path to liberlang.a built by mobile-BEAM-OTP
-# This path is relative to the project root
-set(LIBERLANG_DIR "${CMAKE_SOURCE_DIR}/../../../../../../_build/${ANDROID_ABI}")
+# CMAKE_SOURCE_DIR is test/e2e/apps/android/app/src/main/cpp/
+# Go up 8 levels to reach project root, then into _build/{arch}
+set(LIBERLANG_DIR "${CMAKE_SOURCE_DIR}/../../../../../../../../_build/${ANDROID_ABI}")
 
 # Check if liberlang.a exists
 if(NOT EXISTS "${LIBERLANG_DIR}/liberlang.a")

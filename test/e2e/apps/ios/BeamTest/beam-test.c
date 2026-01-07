@@ -17,7 +17,7 @@
 // Erlang runtime declarations
 // These are defined in liberlang.xcframework
 extern int erl_start(int argc, char *argv[]);
-extern void erl_stop(void);
+// Note: erl_stop doesn't exist in liberlang.a, BEAM cleanup is handled by erl_exit
 
 // Global state
 static bool g_beam_initialized = false;
@@ -98,12 +98,14 @@ bool beam_is_initialized(void) {
 
 /**
  * Cleanup BEAM runtime.
+ * Note: The BEAM VM doesn't have a clean stop API - erl_exit terminates the process.
+ * For embedded use, we just mark as uninitialized.
  */
 void beam_cleanup(void) {
     if (g_beam_initialized) {
-        printf("[BeamTest] Stopping BEAM\n");
-        erl_stop();
+        printf("[BeamTest] BEAM cleanup (marking as uninitialized)\n");
         g_beam_initialized = false;
+        // Note: There's no clean way to stop BEAM - erl_exit() terminates the process
     }
 }
 
