@@ -80,31 +80,22 @@ defmodule MobileRuntimes.E2E.Builder do
       |> Enum.map(&arch_to_gradle_flavor/1)
       |> Enum.uniq()
 
-    # Ensure gradle wrapper exists, generate if needed
+    # Prefer system gradle (CI sets up specific version), fallback to gradlew
     gradlew_path = Path.join(@android_app_dir, "gradlew")
 
     final_cmd =
       cond do
+        # Prefer system gradle first (CI uses gradle-build-action with specific version)
+        gradle_cmd = find_gradle_command() ->
+          Logger.info("Using system gradle: #{gradle_cmd}")
+          gradle_cmd
+
         File.exists?(gradlew_path) ->
+          Logger.info("Using gradlew")
           "./gradlew"
 
-        gradle_cmd = find_gradle_command() ->
-          # Generate wrapper using system gradle
-          Logger.info("Generating Gradle wrapper...")
-          case System.cmd(gradle_cmd, ["wrapper", "--gradle-version", "8.5"],
-                 cd: @android_app_dir,
-                 stderr_to_stdout: true
-               ) do
-            {_, 0} ->
-              if File.exists?(gradlew_path), do: "./gradlew", else: gradle_cmd
-
-            {error, _} ->
-              Logger.warning("Failed to generate wrapper: #{error}")
-              gradle_cmd
-          end
-
         true ->
-          Logger.error("Neither gradlew nor gradle found. Install Gradle or add wrapper to project.")
+          Logger.error("Neither gradle nor gradlew found. Install Gradle or add wrapper to project.")
           nil
       end
 
@@ -192,16 +183,35 @@ defmodule MobileRuntimes.E2E.Builder do
       "../../_build/e2e/ios"
     ]
 
+    # Run xcodebuild and capture output to file for debugging
+    log_file = Path.join(System.tmp_dir!(), "xcodebuild.log")
+
     case System.cmd("xcodebuild", args,
            cd: @ios_app_dir,
            stderr_to_stdout: true
          ) do
-      {_output, 0} ->
+      {output, 0} ->
+        Logger.info("xcodebuild completed successfully")
         :ok
 
-      {error, code} ->
-        Logger.error("xcodebuild failed (exit #{code}): #{error}")
-        {:error, error}
+      {output, code} ->
+        # Write full output to file for debugging
+        File.write!(log_file, output)
+        Logger.error("xcodebuild failed (exit #{code}). Full log: #{log_file}")
+
+        # Try to extract the actual error from the output
+        error_lines =
+          output
+          |> String.split("\n")
+          |> Enum.filter(&String.contains?(&1, "error:"))
+          |> Enum.take(10)
+
+        if error_lines != [] do
+          Logger.error("Build errors:\n#{Enum.join(error_lines, "\n")}")
+        end
+
+        # Return truncated error for display
+        {:error, String.slice(output, -2000..-1) || output}
     end
   end
 
