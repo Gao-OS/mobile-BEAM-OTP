@@ -8,10 +8,10 @@
  * Based on elixir-desktop's native-lib.cpp pattern.
  */
 
+#include "beam-test.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 #include <time.h>
 
 // Erlang runtime declarations
@@ -121,16 +121,6 @@ long long beam_get_start_time(void) {
 long long beam_get_elapsed_time(long long start_time) {
     return current_time_ms() - start_time;
 }
-
-/**
- * Test result structure for execution tests.
- */
-typedef struct {
-    bool passed;
-    const char* output;
-    const char* error;
-    long long time_ms;
-} BeamTestResult;
 
 /**
  * Run arithmetic test (1 + 1 = 2).
