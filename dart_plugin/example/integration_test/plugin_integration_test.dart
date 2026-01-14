@@ -6,20 +6,23 @@
 // For more information about Flutter integration tests, please see
 // https://flutter.dev/to/integration-testing
 
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-
-import 'package:dart_plugin/dart_plugin.dart';
+import 'package:beam_vm/beam_vm.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('getPlatformVersion test', (WidgetTester tester) async {
-    final DartPlugin plugin = DartPlugin();
-    final String? version = await plugin.getPlatformVersion();
-    // The version string depends on the host platform running the test, so
-    // just assert that some non-empty string is returned.
-    expect(version?.isNotEmpty, true);
+  testWidgets('getOtpVersion test', (WidgetTester tester) async {
+    final beamVm = BeamVm();
+    final version = await beamVm.otpVersion;
+    // The version string depends on the embedded runtime
+    expect(version.isNotEmpty, true);
+  });
+
+  testWidgets('initial status is uninitialized', (WidgetTester tester) async {
+    final beamVm = BeamVm();
+    expect(beamVm.status, equals(BeamVmStatus.uninitialized));
+    expect(beamVm.isInitialized, isFalse);
   });
 }

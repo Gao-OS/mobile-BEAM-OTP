@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-
-import 'package:flutter/services.dart';
-import 'package:dart_plugin/dart_plugin.dart';
+import 'package:beam_vm/beam_vm.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,35 +13,35 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
-  final _dartPlugin = DartPlugin();
+  final _beamVm = BeamVm();
+  String _otpVersion = 'Unknown';
+  BeamVmStatus _status = BeamVmStatus.uninitialized;
 
   @override
   void initState() {
     super.initState();
-    initPlatformState();
+    _initBeamVm();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
-    try {
-      platformVersion =
-          await _dartPlugin.getPlatformVersion() ?? 'Unknown platform version';
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
+  Future<void> _initBeamVm() async {
+    // Listen to status changes
+    _beamVm.statusStream.listen((status) {
+      if (mounted) {
+        setState(() => _status = status);
+      }
     });
+
+    // Get OTP version
+    try {
+      final version = await _beamVm.otpVersion;
+      if (mounted) {
+        setState(() => _otpVersion = version);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _otpVersion = 'Error: $e');
+      }
+    }
   }
 
   @override
@@ -52,10 +49,26 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('BEAM VM Example'),
         ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('OTP Version: $_otpVersion'),
+              const SizedBox(height: 8),
+              Text('Status: ${_status.name}'),
+              const SizedBox(height: 24),
+              const Text(
+                'Note: To fully test, you need to:\n'
+                '1. Add liberlang.a/xcframework to the app\n'
+                '2. Bundle an Elixir release in assets\n'
+                '3. Call beamVm.initialize() with the path',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
         ),
       ),
     );
