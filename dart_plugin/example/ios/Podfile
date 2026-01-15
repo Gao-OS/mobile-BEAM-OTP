@@ -39,5 +39,20 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # Configure liberlang.xcframework search paths for beam_vm plugin
+    target.build_configurations.each do |config|
+      xcframework_path = File.join(__dir__, 'liberlang.xcframework')
+      if File.exist?(xcframework_path)
+        # Add library search paths for each architecture slice
+        existing_paths = config.build_settings['LIBRARY_SEARCH_PATHS'] || ['$(inherited)']
+        existing_paths = [existing_paths] unless existing_paths.is_a?(Array)
+        config.build_settings['LIBRARY_SEARCH_PATHS'] = existing_paths + [
+          "#{xcframework_path}/ios-arm64",
+          "#{xcframework_path}/ios-arm64-simulator",
+          "#{xcframework_path}/ios-x86_64-simulator"
+        ]
+      end
+    end
   end
 end

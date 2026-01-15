@@ -7,20 +7,44 @@ project("beam_vm" LANGUAGES CXX)
 # Find liberlang.a from the host app's jniLibs directory
 # Users must place liberlang.a in their app's android/app/src/main/jniLibs/{ABI}/
 # The path is passed via LIBERLANG_DIR or we search common locations
-if(DEFINED LIBERLANG_DIR)
+set(ERLANG_LIB_PATH "")
+set(ERLANG_LIB_FOUND FALSE)
+
+if(DEFINED LIBERLANG_DIR AND EXISTS "${LIBERLANG_DIR}/liberlang.a")
     set(ERLANG_LIB_PATH "${LIBERLANG_DIR}/liberlang.a")
+    set(ERLANG_LIB_FOUND TRUE)
+    message(STATUS "Found liberlang.a via LIBERLANG_DIR: ${ERLANG_LIB_PATH}")
 else()
-    # Default: look in the app's jniLibs directory
-    # This path resolves when building the host app, not the plugin
-    set(ERLANG_LIB_PATH "${CMAKE_SOURCE_DIR}/../../../app/src/main/jniLibs/${ANDROID_ABI}/liberlang.a")
+    # Search multiple possible locations for liberlang.a
+    # Priority order: project jniLibs, build directory, well-known locations
+    set(SEARCH_PATHS
+        # Host app's jniLibs (standard Flutter plugin context)
+        "${CMAKE_SOURCE_DIR}/../../../app/src/main/jniLibs/${ANDROID_ABI}/liberlang.a"
+        # Alternative: relative to project root
+        "${CMAKE_SOURCE_DIR}/../../../../app/src/main/jniLibs/${ANDROID_ABI}/liberlang.a"
+        # Build output location
+        "${CMAKE_BINARY_DIR}/../../../jniLibs/${ANDROID_ABI}/liberlang.a"
+    )
+
+    foreach(SEARCH_PATH ${SEARCH_PATHS})
+        if(EXISTS "${SEARCH_PATH}")
+            get_filename_component(ERLANG_LIB_PATH "${SEARCH_PATH}" ABSOLUTE)
+            set(ERLANG_LIB_FOUND TRUE)
+            message(STATUS "Found liberlang.a at: ${ERLANG_LIB_PATH}")
+            break()
+        endif()
+    endforeach()
 endif()
 
-message(STATUS "Looking for liberlang.a at: ${ERLANG_LIB_PATH}")
+if(NOT ERLANG_LIB_FOUND)
+    message(STATUS "Searched paths for liberlang.a:")
+    message(STATUS "  CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
+    message(STATUS "  CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
+    message(STATUS "  ANDROID_ABI: ${ANDROID_ABI}")
+endif()
 
-# Check if liberlang exists (warning only, actual build happens in host app context)
-if(EXISTS "${ERLANG_LIB_PATH}")
-    message(STATUS "Found liberlang.a")
-
+# Configure liberlang linking if found
+if(ERLANG_LIB_FOUND)
     # Import liberlang as static library
     add_library(erlang STATIC IMPORTED)
     set_target_properties(erlang PROPERTIES
@@ -28,7 +52,7 @@ if(EXISTS "${ERLANG_LIB_PATH}")
     )
     set(HAVE_ERLANG TRUE)
 else()
-    message(WARNING "liberlang.a not found at ${ERLANG_LIB_PATH}")
+    message(WARNING "liberlang.a not found!")
     message(WARNING "Download from: https://github.com/Gao-OS/mobile-BEAM-OTP/releases")
     message(WARNING "Place in: android/app/src/main/jniLibs/{ABI}/liberlang.a")
     set(HAVE_ERLANG FALSE)
