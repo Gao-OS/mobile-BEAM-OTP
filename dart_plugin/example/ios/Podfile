@@ -45,12 +45,12 @@ post_install do |installer|
       xcframework_path = File.join(__dir__, 'liberlang.xcframework')
       if File.exist?(xcframework_path)
         # Add library search paths for each architecture slice
+        # xcframework structure: ios-arm64 (device), ios-arm64_x86_64-simulator (combined simulator)
         existing_paths = config.build_settings['LIBRARY_SEARCH_PATHS'] || ['$(inherited)']
         existing_paths = [existing_paths] unless existing_paths.is_a?(Array)
         config.build_settings['LIBRARY_SEARCH_PATHS'] = existing_paths + [
           "#{xcframework_path}/ios-arm64",
-          "#{xcframework_path}/ios-arm64-simulator",
-          "#{xcframework_path}/ios-x86_64-simulator"
+          "#{xcframework_path}/ios-arm64_x86_64-simulator"
         ]
       end
     end

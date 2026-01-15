@@ -28,8 +28,8 @@ on iOS devices. Requires liberlang.xcframework from mobile-BEAM-OTP releases.
     # Link system libraries required by liberlang
     'OTHER_LDFLAGS' => '-lz -lm -ldl -lerlang',
     # Search paths for liberlang.xcframework (provided by host app)
-    'FRAMEWORK_SEARCH_PATHS' => '$(inherited) "${PODS_ROOT}/../liberlang.xcframework" "${SRCROOT}/../liberlang.xcframework"',
-    'LIBRARY_SEARCH_PATHS' => '$(inherited) "${PODS_ROOT}/../liberlang.xcframework/ios-arm64" "${PODS_ROOT}/../liberlang.xcframework/ios-arm64-simulator" "${PODS_ROOT}/../liberlang.xcframework/ios-x86_64-simulator" "${SRCROOT}/../liberlang.xcframework/ios-arm64" "${SRCROOT}/../liberlang.xcframework/ios-arm64-simulator" "${SRCROOT}/../liberlang.xcframework/ios-x86_64-simulator"'
+    # xcframework structure: ios-arm64 (device), ios-arm64_x86_64-simulator (combined simulator)
+    'LIBRARY_SEARCH_PATHS' => '$(inherited) "${PODS_ROOT}/../liberlang.xcframework/ios-arm64" "${PODS_ROOT}/../liberlang.xcframework/ios-arm64_x86_64-simulator"'
   }
 
   s.swift_version = '5.0'

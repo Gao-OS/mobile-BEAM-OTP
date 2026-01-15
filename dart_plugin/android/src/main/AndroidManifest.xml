@@ -1,3 +1,3 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="io.beamvm.dart_plugin">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Package namespace is defined in build.gradle -->
 </manifest>
