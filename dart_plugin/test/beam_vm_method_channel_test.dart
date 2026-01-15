@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:beam_vm/beam_vm.dart';
 import 'package:beam_vm/beam_vm_method_channel.dart';
-import 'package:beam_vm/beam_vm_platform_interface.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -315,7 +314,8 @@ void main() {
             .handlePlatformMessage(
           'io.beamvm/beam_vm',
           const StandardMethodCodec().encodeMethodCall(
-            const MethodCall('onMessage', {'tag': 'events', 'message': 'hello'}),
+            const MethodCall(
+                'onMessage', {'tag': 'events', 'message': 'hello'}),
           ),
           (ByteData? data) {},
         );

@@ -15,7 +15,6 @@ class MethodChannelBeamVm extends BeamVmPlatform {
   final _statusController = StreamController<BeamVmStatus>.broadcast();
   BeamVmStatus _status = BeamVmStatus.uninitialized;
 
-  Stream<dynamic>? _eventStream;
   final Map<String, List<void Function(dynamic)>> _messageCallbacks = {};
 
   MethodChannelBeamVm() {

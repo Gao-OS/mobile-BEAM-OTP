@@ -1,9 +1,3 @@
-/// Flutter plugin to embed and run the Erlang/Elixir BEAM VM on mobile platforms.
-///
-/// This plugin provides a Dart interface to initialize and interact with
-/// the BEAM virtual machine compiled via mobile-BEAM-OTP.
-library beam_vm;
-
 import 'dart:async';
 import 'beam_vm_platform_interface.dart';
 
@@ -35,8 +29,7 @@ class BeamVm {
   BeamVm._internal();
 
   /// Stream of status changes.
-  Stream<BeamVmStatus> get statusStream =>
-      BeamVmPlatform.instance.statusStream;
+  Stream<BeamVmStatus> get statusStream => BeamVmPlatform.instance.statusStream;
 
   /// Current VM status.
   BeamVmStatus get status => BeamVmPlatform.instance.status;
@@ -119,5 +112,6 @@ class BeamVmException implements Exception {
   BeamVmException(this.message, {this.code, this.details});
 
   @override
-  String toString() => 'BeamVmException: $message${code != null ? ' ($code)' : ''}';
+  String toString() =>
+      'BeamVmException: $message${code != null ? ' ($code)' : ''}';
 }

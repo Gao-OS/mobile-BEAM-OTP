@@ -29,7 +29,8 @@ class OnMessageRecord {
 }
 
 /// Mock implementation of [BeamVmPlatform] for testing.
-class MockBeamVmPlatform extends BeamVmPlatform with MockPlatformInterfaceMixin {
+class MockBeamVmPlatform extends BeamVmPlatform
+    with MockPlatformInterfaceMixin {
   // Configuration
   bool initializeResult = true;
   BeamVmException? initializeError;
@@ -78,7 +79,8 @@ class MockBeamVmPlatform extends BeamVmPlatform with MockPlatformInterfaceMixin 
   }
 
   @override
-  Future<dynamic> call(String module, String function, List<dynamic> args) async {
+  Future<dynamic> call(
+      String module, String function, List<dynamic> args) async {
     callCalls.add(CallRecord(module, function, args));
 
     if (callError != null) {
