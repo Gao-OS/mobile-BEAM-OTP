@@ -139,6 +139,37 @@ jobs:
           echo "Installed iOS runtime framework:"
           ls -la dart_plugin/example/ios/liberlang.xcframework/
 
+      - name: Fix xcframework library filenames
+        run: |
+          # The xcframework may have incorrectly named library files (e.g., "2402-liberlang.a")
+          # which prevents the linker from finding them with -lerlang flag.
+          # Rename to liberlang.a and update Info.plist accordingly.
+          cd dart_plugin/example/ios/liberlang.xcframework
+
+          for slice in ios-arm64 ios-arm64_x86_64-simulator; do
+            if [ -d "$slice" ]; then
+              cd "$slice"
+              # Find any file matching *-liberlang.a or *liberlang.a that isn't liberlang.a
+              for f in *liberlang.a; do
+                if [ -f "$f" ] && [ "$f" != "liberlang.a" ]; then
+                  echo "Renaming $slice/$f -> liberlang.a"
+                  mv "$f" liberlang.a
+                fi
+              done
+              cd ..
+            fi
+          done
+
+          # Update Info.plist to reference correct filename
+          if [ -f Info.plist ]; then
+            sed -i '' 's|<string>[^<]*liberlang\.a</string>|<string>liberlang.a</string>|g' Info.plist
+            echo "Updated Info.plist:"
+            cat Info.plist
+          fi
+
+          echo "Final xcframework structure:"
+          find . -name "*.a" -exec ls -la {} \;
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
