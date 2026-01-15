@@ -37,22 +37,23 @@ target 'Runner' do
 end
 
 post_install do |installer|
+  xcframework_path = File.join(__dir__, 'liberlang.xcframework')
+  xcframework_exists = File.exist?(xcframework_path)
+
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
 
+    next unless xcframework_exists
+
     # Configure liberlang.xcframework search paths for beam_vm plugin
+    # xcframework structure: ios-arm64 (device), ios-arm64_x86_64-simulator (combined simulator)
+    # Use SDK-specific settings to avoid architecture mismatch
     target.build_configurations.each do |config|
-      xcframework_path = File.join(__dir__, 'liberlang.xcframework')
-      if File.exist?(xcframework_path)
-        # Add library search paths for each architecture slice
-        # xcframework structure: ios-arm64 (device), ios-arm64_x86_64-simulator (combined simulator)
-        existing_paths = config.build_settings['LIBRARY_SEARCH_PATHS'] || ['$(inherited)']
-        existing_paths = [existing_paths] unless existing_paths.is_a?(Array)
-        config.build_settings['LIBRARY_SEARCH_PATHS'] = existing_paths + [
-          "#{xcframework_path}/ios-arm64",
-          "#{xcframework_path}/ios-arm64_x86_64-simulator"
-        ]
-      end
+      config.build_settings['LIBRARY_SEARCH_PATHS[sdk=iphoneos*]'] ||= ['$(inherited)']
+      config.build_settings['LIBRARY_SEARCH_PATHS[sdk=iphoneos*]'] << "#{xcframework_path}/ios-arm64"
+
+      config.build_settings['LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]'] ||= ['$(inherited)']
+      config.build_settings['LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]'] << "#{xcframework_path}/ios-arm64_x86_64-simulator"
     end
   end
 end

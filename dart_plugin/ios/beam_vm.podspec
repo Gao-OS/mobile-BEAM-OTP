@@ -22,14 +22,15 @@ on iOS devices. Requires liberlang.xcframework from mobile-BEAM-OTP releases.
   s.platform = :ios, '12.0'
 
   # Build settings - configure to find liberlang.xcframework in the host app
+  # xcframework structure: ios-arm64 (device), ios-arm64_x86_64-simulator (combined simulator)
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',
     'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
     # Link system libraries required by liberlang
     'OTHER_LDFLAGS' => '-lz -lm -ldl -lerlang',
-    # Search paths for liberlang.xcframework (provided by host app)
-    # xcframework structure: ios-arm64 (device), ios-arm64_x86_64-simulator (combined simulator)
-    'LIBRARY_SEARCH_PATHS' => '$(inherited) "${PODS_ROOT}/../liberlang.xcframework/ios-arm64" "${PODS_ROOT}/../liberlang.xcframework/ios-arm64_x86_64-simulator"'
+    # Search paths - SDK-specific to avoid architecture mismatch
+    'LIBRARY_SEARCH_PATHS[sdk=iphoneos*]' => '$(inherited) "${PODS_ROOT}/../liberlang.xcframework/ios-arm64"',
+    'LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]' => '$(inherited) "${PODS_ROOT}/../liberlang.xcframework/ios-arm64_x86_64-simulator"'
   }
 
   s.swift_version = '5.0'
