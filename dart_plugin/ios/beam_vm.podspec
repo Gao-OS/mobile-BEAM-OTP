@@ -23,14 +23,19 @@ on iOS devices. Requires liberlang.xcframework from mobile-BEAM-OTP releases.
 
   # Build settings - configure to find liberlang.xcframework in the host app
   # xcframework structure: ios-arm64 (device), ios-arm64_x86_64-simulator (combined simulator)
+  # Add both paths - linker will use the one matching current architecture
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',
     'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
     # Link system libraries required by liberlang
     'OTHER_LDFLAGS' => '-lz -lm -ldl -lerlang',
-    # Search paths - SDK-specific to avoid architecture mismatch
-    'LIBRARY_SEARCH_PATHS[sdk=iphoneos*]' => '$(inherited) "${PODS_ROOT}/../liberlang.xcframework/ios-arm64"',
-    'LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]' => '$(inherited) "${PODS_ROOT}/../liberlang.xcframework/ios-arm64_x86_64-simulator"'
+    # Search paths - include both slices, linker picks correct architecture
+    'LIBRARY_SEARCH_PATHS' => '$(inherited) "${PODS_ROOT}/../liberlang.xcframework/ios-arm64" "${PODS_ROOT}/../liberlang.xcframework/ios-arm64_x86_64-simulator"'
+  }
+
+  # Propagate library search paths to the app target
+  s.user_target_xcconfig = {
+    'LIBRARY_SEARCH_PATHS' => '$(inherited) "${PODS_ROOT}/../liberlang.xcframework/ios-arm64" "${PODS_ROOT}/../liberlang.xcframework/ios-arm64_x86_64-simulator"'
   }
 
   s.swift_version = '5.0'

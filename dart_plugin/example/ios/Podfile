@@ -47,13 +47,14 @@ post_install do |installer|
 
     # Configure liberlang.xcframework search paths for beam_vm plugin
     # xcframework structure: ios-arm64 (device), ios-arm64_x86_64-simulator (combined simulator)
-    # Use SDK-specific settings to avoid architecture mismatch
+    # Add both paths - linker will use the one matching current architecture
     target.build_configurations.each do |config|
-      config.build_settings['LIBRARY_SEARCH_PATHS[sdk=iphoneos*]'] ||= ['$(inherited)']
-      config.build_settings['LIBRARY_SEARCH_PATHS[sdk=iphoneos*]'] << "#{xcframework_path}/ios-arm64"
-
-      config.build_settings['LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]'] ||= ['$(inherited)']
-      config.build_settings['LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]'] << "#{xcframework_path}/ios-arm64_x86_64-simulator"
+      existing_paths = config.build_settings['LIBRARY_SEARCH_PATHS'] || ['$(inherited)']
+      existing_paths = [existing_paths] unless existing_paths.is_a?(Array)
+      config.build_settings['LIBRARY_SEARCH_PATHS'] = existing_paths + [
+        "#{xcframework_path}/ios-arm64",
+        "#{xcframework_path}/ios-arm64_x86_64-simulator"
+      ]
     end
   end
 end
