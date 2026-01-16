@@ -90,10 +90,9 @@ class MethodChannelBeamVm extends BeamVmPlatform {
     _updateStatus(BeamVmStatus.initializing);
 
     try {
-      final result = await methodChannel.invokeMethod<bool>(
-        'initialize',
-        {'erlangPath': erlangPath},
-      );
+      final result = await methodChannel.invokeMethod<bool>('initialize', {
+        'erlangPath': erlangPath,
+      });
 
       if (result == true) {
         _updateStatus(BeamVmStatus.running);
@@ -123,14 +122,11 @@ class MethodChannelBeamVm extends BeamVmPlatform {
     }
 
     try {
-      final result = await methodChannel.invokeMethod<String>(
-        'call',
-        {
-          'module': module,
-          'function': function,
-          'args': jsonEncode(args),
-        },
-      );
+      final result = await methodChannel.invokeMethod<String>('call', {
+        'module': module,
+        'function': function,
+        'args': jsonEncode(args),
+      });
 
       if (result != null) {
         return jsonDecode(result);
@@ -152,13 +148,10 @@ class MethodChannelBeamVm extends BeamVmPlatform {
     }
 
     try {
-      await methodChannel.invokeMethod<void>(
-        'send',
-        {
-          'processName': processName,
-          'message': jsonEncode(message),
-        },
-      );
+      await methodChannel.invokeMethod<void>('send', {
+        'processName': processName,
+        'message': jsonEncode(message),
+      });
     } on PlatformException catch (e) {
       throw BeamVmException(
         e.message ?? 'Send failed',
@@ -184,10 +177,9 @@ class MethodChannelBeamVm extends BeamVmPlatform {
       _messageCallbacks[tag]?.remove(callback);
       if (_messageCallbacks[tag]?.isEmpty ?? false) {
         _messageCallbacks.remove(tag);
-        methodChannel.invokeMethod<void>(
-          'unregisterMessageHandler',
-          {'tag': tag},
-        );
+        methodChannel.invokeMethod<void>('unregisterMessageHandler', {
+          'tag': tag,
+        });
       }
     };
 

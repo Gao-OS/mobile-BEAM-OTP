@@ -23,20 +23,20 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.0'
+          flutter-version: '3.38.6'
           channel: 'stable'
 
       - name: Install melos
         run: dart pub global activate melos
 
       - name: Bootstrap packages
-        run: melos bootstrap
+        run: melos bs
 
       - name: Analyze all packages
-        run: melos analyze
+        run: melos run analyze
 
       - name: Run all tests
-        run: melos test
+        run: melos run test
 
   publish-dry-run:
     name: Publish Dry Run
@@ -46,17 +46,17 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.0'
+          flutter-version: '3.38.6'
           channel: 'stable'
 
       - name: Install melos
         run: dart pub global activate melos
 
       - name: Bootstrap packages
-        run: melos bootstrap
+        run: melos bs
 
       - name: Dry run publish
-        run: melos publish:dry-run
+        run: melos run publish:dry-run
 
   build-example:
     name: Build Example App
@@ -66,17 +66,17 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.0'
+          flutter-version: '3.38.6'
           channel: 'stable'
 
       - name: Install melos
         run: dart pub global activate melos
 
       - name: Bootstrap packages
-        run: melos bootstrap
+        run: melos bs
 
       - name: Build Android APK
-        run: melos build:example:android
+        run: melos run build:example:android
 
       - name: Build iOS
-        run: melos build:example:ios
+        run: melos run build:example:ios

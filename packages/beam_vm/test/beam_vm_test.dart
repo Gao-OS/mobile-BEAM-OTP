@@ -81,7 +81,10 @@ class MockBeamVmPlatform extends BeamVmPlatform
 
   @override
   Future<dynamic> call(
-      String module, String function, List<dynamic> args) async {
+    String module,
+    String function,
+    List<dynamic> args,
+  ) async {
     callCalls.add(CallRecord(module, function, args));
 
     if (callError != null) {

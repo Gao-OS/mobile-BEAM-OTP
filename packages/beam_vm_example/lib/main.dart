@@ -48,9 +48,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('BEAM VM Example'),
-        ),
+        appBar: AppBar(title: const Text('BEAM VM Example')),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
