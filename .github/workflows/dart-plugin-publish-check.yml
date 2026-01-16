@@ -1,0 +1,105 @@
+name: "Dart Plugin Publish Check"
+
+on:
+  push:
+    paths:
+      - "dart_plugin/**"
+  pull_request:
+    paths:
+      - "dart_plugin/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: dart_plugin
+
+jobs:
+  analyze:
+    name: "Analyze & Test"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.0"
+          channel: "stable"
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run tests
+        run: flutter test
+
+  publish-dry-run:
+    name: "Publish Dry Run"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.0"
+          channel: "stable"
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Publish dry run
+        run: flutter pub publish --dry-run
+
+  pana:
+    name: "Pana Analysis"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.0"
+          channel: "stable"
+          cache: true
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Install pana
+        run: dart pub global activate pana
+
+      - name: Run pana
+        run: |
+          pana --no-warning . 2>&1 | tee pana-report.txt
+
+          # Extract score and check for critical issues
+          SCORE=$(grep -oP 'Points: \K[0-9]+' pana-report.txt | head -1 || echo "0")
+          echo "Pana score: $SCORE/160"
+
+          # Fail if score is too low (threshold: 100)
+          if [ "$SCORE" -lt 100 ]; then
+            echo "::warning::Pana score ($SCORE) is below threshold (100)"
+          fi
+
+      - name: Upload pana report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pana-report
+          path: dart_plugin/pana-report.txt

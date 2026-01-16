@@ -4,10 +4,15 @@ version: 1.0.0
 homepage: https://github.com/Gao-OS/mobile-BEAM-OTP
 repository: https://github.com/Gao-OS/mobile-BEAM-OTP
 issue_tracker: https://github.com/Gao-OS/mobile-BEAM-OTP/issues
+topics:
+  - erlang
+  - elixir
+  - beam-vm
+  - embedded-runtime
 
 environment:
-  sdk: ">=3.0.0"
-  flutter: '>=3.10.0'
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
 
 dependencies:
   flutter:

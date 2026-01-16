@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'beam_vm'
-  s.version          = '0.1.0'
+  s.version          = '1.0.0'
   s.summary          = 'Flutter plugin to embed the Erlang/Elixir BEAM VM'
   s.description      = <<-DESC
 Flutter plugin for embedding and running the Erlang/Elixir BEAM virtual machine
