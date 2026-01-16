@@ -1,0 +1,82 @@
+name: Packages CI
+
+on:
+  push:
+    branches: [OTP-26, OTP-27, OTP-28]
+    paths:
+      - 'packages/**'
+      - 'pubspec.yaml'
+      - '.github/workflows/packages-ci.yml'
+  pull_request:
+    branches: [OTP-26, OTP-27, OTP-28]
+    paths:
+      - 'packages/**'
+      - 'pubspec.yaml'
+      - '.github/workflows/packages-ci.yml'
+
+jobs:
+  analyze-and-test:
+    name: Analyze & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Install melos
+        run: dart pub global activate melos
+
+      - name: Bootstrap packages
+        run: melos bootstrap
+
+      - name: Analyze all packages
+        run: melos analyze
+
+      - name: Run all tests
+        run: melos test
+
+  publish-dry-run:
+    name: Publish Dry Run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Install melos
+        run: dart pub global activate melos
+
+      - name: Bootstrap packages
+        run: melos bootstrap
+
+      - name: Dry run publish
+        run: melos publish:dry-run
+
+  build-example:
+    name: Build Example App
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Install melos
+        run: dart pub global activate melos
+
+      - name: Bootstrap packages
+        run: melos bootstrap
+
+      - name: Build Android APK
+        run: melos build:example:android
+
+      - name: Build iOS
+        run: melos build:example:ios

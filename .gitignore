@@ -7,3 +7,15 @@ erl_crash.dump
 *.tmp
 .DS_Store
 tmp/
+
+# Dart/Flutter
+.dart_tool/
+.packages
+.pub/
+pubspec.lock
+*.iml
+.idea/
+
+# Example app binaries (downloaded separately)
+dart_plugin/example/android/app/src/main/jniLibs/
+dart_plugin/example/ios/liberlang.xcframework/
