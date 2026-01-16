@@ -1,4 +1,4 @@
-name: "Dart Plugin Integration Tests"
+name: "Flutter Plugin Integration Tests"
 
 # NOTE: Integration tests require liberlang runtime which must be downloaded
 # from releases. These tests verify the full plugin stack works with the
@@ -62,17 +62,17 @@ jobs:
 
       - name: Setup liberlang for Android
         run: |
-          mkdir -p dart_plugin/example/android/app/src/main/jniLibs/arm64-v8a
-          mkdir -p dart_plugin/example/android/app/src/main/jniLibs/armeabi-v7a
-          mkdir -p dart_plugin/example/android/app/src/main/jniLibs/x86_64
+          mkdir -p packages/beam_vm_example/android/app/src/main/jniLibs/arm64-v8a
+          mkdir -p packages/beam_vm_example/android/app/src/main/jniLibs/armeabi-v7a
+          mkdir -p packages/beam_vm_example/android/app/src/main/jniLibs/x86_64
 
           # Copy liberlang.a to jniLibs (the CMake will find and link it)
-          cp /tmp/arm64-v8a/liberlang.a dart_plugin/example/android/app/src/main/jniLibs/arm64-v8a/
-          cp /tmp/armeabi-v7a/liberlang.a dart_plugin/example/android/app/src/main/jniLibs/armeabi-v7a/
-          cp /tmp/x86_64/liberlang.a dart_plugin/example/android/app/src/main/jniLibs/x86_64/
+          cp /tmp/arm64-v8a/liberlang.a packages/beam_vm_example/android/app/src/main/jniLibs/arm64-v8a/
+          cp /tmp/armeabi-v7a/liberlang.a packages/beam_vm_example/android/app/src/main/jniLibs/armeabi-v7a/
+          cp /tmp/x86_64/liberlang.a packages/beam_vm_example/android/app/src/main/jniLibs/x86_64/
 
           echo "Installed Android runtime libraries:"
-          find dart_plugin/example/android/app/src/main/jniLibs -name "*.a"
+          find packages/beam_vm_example/android/app/src/main/jniLibs -name "*.a"
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -83,13 +83,15 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.24.0"
+          flutter-version: "3.38.6"
           channel: "stable"
           cache: true
 
-      - name: Install dependencies
-        working-directory: dart_plugin/example
-        run: flutter pub get
+      - name: Install melos
+        run: dart pub global activate melos
+
+      - name: Bootstrap
+        run: melos bs
 
       - name: Enable KVM group permissions
         run: |
@@ -106,7 +108,7 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
-          working-directory: dart_plugin/example
+          working-directory: packages/beam_vm_example
           script: flutter test integration_test/plugin_integration_test.dart
 
   ios:
@@ -134,17 +136,17 @@ jobs:
       - name: Setup liberlang.xcframework for iOS
         run: |
           # Copy xcframework to example app
-          cp -R /tmp/liberlang.xcframework dart_plugin/example/ios/
+          cp -R /tmp/liberlang.xcframework packages/beam_vm_example/ios/
 
           echo "Installed iOS runtime framework:"
-          ls -la dart_plugin/example/ios/liberlang.xcframework/
+          ls -la packages/beam_vm_example/ios/liberlang.xcframework/
 
       - name: Fix xcframework library filenames
         run: |
           # The xcframework may have incorrectly named library files (e.g., "2402-liberlang.a")
           # which prevents the linker from finding them with -lerlang flag.
           # Rename to liberlang.a and update Info.plist accordingly.
-          cd dart_plugin/example/ios/liberlang.xcframework
+          cd packages/beam_vm_example/ios/liberlang.xcframework
 
           for slice in ios-arm64 ios-arm64_x86_64-simulator; do
             if [ -d "$slice" ]; then
@@ -173,13 +175,15 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.24.0"
+          flutter-version: "3.38.6"
           channel: "stable"
           cache: true
 
-      - name: Install dependencies
-        working-directory: dart_plugin/example
-        run: flutter pub get
+      - name: Install melos
+        run: dart pub global activate melos
+
+      - name: Bootstrap
+        run: melos bs
 
       - name: List available simulators
         run: xcrun simctl list devices available
@@ -202,7 +206,7 @@ jobs:
           sleep 10
 
       - name: Run integration tests
-        working-directory: dart_plugin/example
+        working-directory: packages/beam_vm_example
         run: |
           flutter test integration_test/plugin_integration_test.dart -d "$SIMULATOR_ID"
 
@@ -219,7 +223,7 @@ jobs:
     steps:
       - name: Check results
         run: |
-          echo "## Dart Plugin Integration Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## Flutter Plugin Integration Test Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if [[ "${{ needs.android.result }}" == "success" ]]; then

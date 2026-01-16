@@ -1,22 +1,18 @@
-name: "Dart Plugin CI"
+name: "Flutter Plugin CI"
 
 on:
   workflow_dispatch:
   push:
     paths:
-      - "dart_plugin/**"
-      - ".github/workflows/dart-plugin.yml"
+      - "packages/**"
+      - ".github/workflows/flutter-plugin.yml"
   pull_request:
     paths:
-      - "dart_plugin/**"
-      - ".github/workflows/dart-plugin.yml"
+      - "packages/**"
+      - ".github/workflows/flutter-plugin.yml"
 
 permissions:
   contents: read
-
-defaults:
-  run:
-    working-directory: dart_plugin
 
 jobs:
   analyze:
@@ -33,11 +29,14 @@ jobs:
           channel: "stable"
           cache: true
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Install melos
+        run: dart pub global activate melos
+
+      - name: Bootstrap
+        run: melos bs
 
       - name: Analyze
-        run: flutter analyze --fatal-infos
+        run: melos run analyze
 
   format:
     name: "Format"
@@ -54,7 +53,7 @@ jobs:
           cache: true
 
       - name: Check formatting
-        run: dart format --set-exit-if-changed .
+        run: dart format --set-exit-if-changed packages/
 
   test:
     name: "Test"
@@ -70,15 +69,11 @@ jobs:
           channel: "stable"
           cache: true
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Install melos
+        run: dart pub global activate melos
+
+      - name: Bootstrap
+        run: melos bs
 
       - name: Run tests
-        run: flutter test --coverage
-
-      - name: Upload coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage
-          path: dart_plugin/coverage/lcov.info
-          if-no-files-found: ignore
+        run: melos run test

@@ -24,7 +24,7 @@ dependencies:
   beam_vm:
     git:
       url: https://github.com/Gao-OS/mobile-BEAM-OTP
-      path: dart_plugin
+      path: packages/beam_vm
 ```
 
 ### 2. Download BEAM runtime libraries

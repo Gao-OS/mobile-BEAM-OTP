@@ -17,5 +17,5 @@ pubspec.lock
 .idea/
 
 # Example app binaries (downloaded separately)
-dart_plugin/example/android/app/src/main/jniLibs/
-dart_plugin/example/ios/liberlang.xcframework/
+packages/beam_vm_example/android/app/src/main/jniLibs/
+packages/beam_vm_example/ios/liberlang.xcframework/

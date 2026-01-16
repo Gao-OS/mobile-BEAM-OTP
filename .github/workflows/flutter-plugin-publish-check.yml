@@ -1,20 +1,16 @@
-name: "Dart Plugin Publish Check"
+name: "Flutter Plugin Publish Check"
 
 on:
   push:
     paths:
-      - "dart_plugin/**"
+      - "packages/**"
   pull_request:
     paths:
-      - "dart_plugin/**"
+      - "packages/**"
   workflow_dispatch:
 
 permissions:
   contents: read
-
-defaults:
-  run:
-    working-directory: dart_plugin
 
 jobs:
   analyze:
@@ -31,14 +27,17 @@ jobs:
           channel: "stable"
           cache: true
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Install melos
+        run: dart pub global activate melos
+
+      - name: Bootstrap
+        run: melos bs
 
       - name: Analyze
-        run: flutter analyze --no-fatal-infos
+        run: melos run analyze
 
       - name: Run tests
-        run: flutter test
+        run: melos run test
 
   publish-dry-run:
     name: "Publish Dry Run"
@@ -54,15 +53,25 @@ jobs:
           channel: "stable"
           cache: true
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Install melos
+        run: dart pub global activate melos
+
+      - name: Bootstrap
+        run: melos bs
 
       - name: Publish dry run
-        run: flutter pub publish --dry-run
+        run: melos run publish:dry-run
 
   pana:
     name: "Pana Analysis"
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package:
+          - beam_vm
+          - beam_vm_android
+          - beam_vm_ios
+          - beam_vm_platform_interface
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -79,19 +88,23 @@ jobs:
         with:
           sdk: stable
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Install melos
+        run: dart pub global activate melos
+
+      - name: Bootstrap
+        run: melos bs
 
       - name: Install pana
         run: dart pub global activate pana
 
-      - name: Run pana
+      - name: Run pana on ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
         run: |
           pana --no-warning . 2>&1 | tee pana-report.txt
 
           # Extract score and check for critical issues
           SCORE=$(grep -oP 'Points: \K[0-9]+' pana-report.txt | head -1 || echo "0")
-          echo "Pana score: $SCORE/160"
+          echo "Pana score for ${{ matrix.package }}: $SCORE/160"
 
           # Fail if score is too low (threshold: 100)
           if [ "$SCORE" -lt 100 ]; then
@@ -101,5 +114,5 @@ jobs:
       - name: Upload pana report
         uses: actions/upload-artifact@v4
         with:
-          name: pana-report
-          path: dart_plugin/pana-report.txt
+          name: pana-report-${{ matrix.package }}
+          path: packages/${{ matrix.package }}/pana-report.txt
