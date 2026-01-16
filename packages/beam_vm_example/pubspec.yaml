@@ -3,7 +3,7 @@ description: Demonstrates how to use the beam_vm plugin.
 publish_to: 'none'
 
 environment:
-  sdk: ">=3.5.0 <4.0.0"
+  sdk: ">=3.6.0 <4.0.0"
   flutter: '>=3.10.0'
 
 resolution: workspace
