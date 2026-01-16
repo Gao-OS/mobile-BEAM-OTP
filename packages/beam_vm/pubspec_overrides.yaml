@@ -1,8 +1,0 @@
-# melos_managed_dependency_overrides: beam_vm_android,beam_vm_ios,beam_vm_platform_interface
-dependency_overrides:
-  beam_vm_android:
-    path: ../beam_vm_android
-  beam_vm_ios:
-    path: ../beam_vm_ios
-  beam_vm_platform_interface:
-    path: ../beam_vm_platform_interface

@@ -19,9 +19,6 @@ melos:
   name: mobile_beam_otp
 
   command:
-    bootstrap:
-      usePubspecOverrides: true
-
     version:
       updateGitTagRefs: true
       workspaceChangelog: true
