@@ -16,14 +16,14 @@ Packages the Erlang/Elixir BEAM Virtual Machine into static libraries for mobile
 
 ## Flutter Plugin
 
-The easiest way to use the BEAM runtime in your mobile app is via our Flutter plugin: [beam_vm](https://github.com/gsmlg-app/beam_vm).
+The easiest way to use the BEAM runtime in your mobile app is via the [beam_vm](https://github.com/gsmlg-app/beam_vm) Flutter plugin, which bundles pre-built binaries from this repository's releases.
 
 ```yaml
 dependencies:
   beam_vm: ^1.0.0
 ```
 
-The plugin bundles pre-built `liberlang.a` binaries for all supported architectures—no manual download or native configuration required.
+No manual download or native configuration required—the plugin handles everything.
 
 For manual native integration without Flutter, see [Using Releases in Your App](#using-releases-in-your-app) below.
 
@@ -116,6 +116,8 @@ Releases are created via GitHub Actions and include:
 - Elixir version
 - Build commit SHA
 - Included NIFs (exqlite by default)
+
+Release artifacts (`liberlang.a` and `liberlang.xcframework`) are consumed by the [beam_vm Flutter plugin](https://github.com/gsmlg-app/beam_vm), which bundles them for easy integration into Flutter apps.
 
 ### Triggering a Release
 
