@@ -4,6 +4,7 @@ version: 1.0.0
 homepage: https://github.com/Gao-OS/mobile-BEAM-OTP
 repository: https://github.com/Gao-OS/mobile-BEAM-OTP/tree/main/packages/beam_vm
 issue_tracker: https://github.com/Gao-OS/mobile-BEAM-OTP/issues
+publisher: gsmlg.dev
 topics:
   - erlang
   - elixir
