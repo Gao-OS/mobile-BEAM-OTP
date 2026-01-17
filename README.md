@@ -16,9 +16,7 @@ Packages the Erlang/Elixir BEAM Virtual Machine into static libraries for mobile
 
 ## Flutter Plugin
 
-The easiest way to use the BEAM runtime in your mobile app is via our Flutter plugin, available on [pub.dev](https://pub.dev/packages/beam_vm).
-
-### Installation
+The easiest way to use the BEAM runtime in your mobile app is via our Flutter plugin: [beam_vm](https://github.com/gsmlg-app/beam_vm).
 
 ```yaml
 dependencies:
@@ -26,36 +24,6 @@ dependencies:
 ```
 
 The plugin bundles pre-built `liberlang.a` binaries for all supported architectures—no manual download or native configuration required.
-
-### Usage
-
-```dart
-import 'package:beam_vm/beam_vm.dart';
-
-// Initialize the BEAM VM
-final beamVm = BeamVm();
-
-Future<void> startBeam() async {
-  final status = await beamVm.initialize(
-    rootPath: '/path/to/erlang/release',
-  );
-
-  if (status == BeamVmStatus.running) {
-    print('BEAM VM is running!');
-  }
-}
-```
-
-### Package Structure
-
-The plugin follows Flutter's [federated plugin architecture](https://docs.flutter.dev/packages-and-plugins/developing-packages#federated-plugins):
-
-| Package | Description | pub.dev |
-|---------|-------------|---------|
-| [beam_vm](https://pub.dev/packages/beam_vm) | App-facing API | [![pub](https://img.shields.io/pub/v/beam_vm.svg)](https://pub.dev/packages/beam_vm) |
-| [beam_vm_android](https://pub.dev/packages/beam_vm_android) | Android implementation + binaries | [![pub](https://img.shields.io/pub/v/beam_vm_android.svg)](https://pub.dev/packages/beam_vm_android) |
-| [beam_vm_ios](https://pub.dev/packages/beam_vm_ios) | iOS implementation + binaries | [![pub](https://img.shields.io/pub/v/beam_vm_ios.svg)](https://pub.dev/packages/beam_vm_ios) |
-| [beam_vm_platform_interface](https://pub.dev/packages/beam_vm_platform_interface) | Platform interface | [![pub](https://img.shields.io/pub/v/beam_vm_platform_interface.svg)](https://pub.dev/packages/beam_vm_platform_interface) |
 
 For manual native integration without Flutter, see [Using Releases in Your App](#using-releases-in-your-app) below.
 
