@@ -133,8 +133,8 @@ Release artifacts (`liberlang.a` and `liberlang.xcframework`) are consumed by th
 OTP and Elixir versions are managed in `.tool-versions`:
 
 ```
-erlang 28.3
-elixir 1.19.4-otp-28
+erlang 28.5
+elixir 1.19.5-otp-28
 ```
 
 Each OTP major version has its own branch (e.g., `OTP-26`, `OTP-27`, `OTP-28`).
@@ -198,11 +198,11 @@ This section explains how to embed the BEAM runtime and run Elixir code in your 
 
 ```bash
 # Download from GitHub releases
-gh release download OTP-28.3 --repo Gao-OS/mobile-BEAM-OTP
+gh release download OTP-28.5 --repo Gao-OS/mobile-BEAM-OTP
 
 # Extract
-tar -xzf android-otp-28.3.tar.gz  # Creates: armeabi-v7a/, arm64-v8a/, x86_64/
-tar -xzf ios-otp-28.3.tar.gz      # Creates: liberlang.xcframework/
+tar -xzf android-otp-28.5.tar.gz  # Creates: armeabi-v7a/, arm64-v8a/, x86_64/
+tar -xzf ios-otp-28.5.tar.gz      # Creates: liberlang.xcframework/
 ```
 
 ### Step 2: Build Your Elixir Project

@@ -31,9 +31,9 @@ dependencies:
 
 ```bash
 # Download from mobile-BEAM-OTP releases
-gh release download OTP-28.3 --repo Gao-OS/mobile-BEAM-OTP
-tar -xzf android-otp-28.3.tar.gz
-tar -xzf ios-otp-28.3.tar.gz
+gh release download OTP-28.5 --repo Gao-OS/mobile-BEAM-OTP
+tar -xzf android-otp-28.5.tar.gz
+tar -xzf ios-otp-28.5.tar.gz
 ```
 
 ### 3. Android Setup
