@@ -132,7 +132,12 @@ defmodule MobileRuntimes.E2E.TestSuite do
   @doc """
   Counts tests by status.
   """
-  @spec count_by_status(t()) :: %{passed: integer(), failed: integer(), error: integer(), skipped: integer()}
+  @spec count_by_status(t()) :: %{
+          passed: integer(),
+          failed: integer(),
+          error: integer(),
+          skipped: integer()
+        }
   def count_by_status(%__MODULE__{tests: tests}) do
     Enum.reduce(tests, %{passed: 0, failed: 0, error: 0, skipped: 0}, fn test, acc ->
       Map.update!(acc, test.status, &(&1 + 1))

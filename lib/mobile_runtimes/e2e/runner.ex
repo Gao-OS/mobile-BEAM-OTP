@@ -71,14 +71,20 @@ defmodule MobileRuntimes.E2E.Runner do
 
     tasks =
       if android_archs != [] do
-        [Task.async(fn -> run_platform_tests(android_archs, timeout, retries, keep_alive) end) | tasks]
+        [
+          Task.async(fn -> run_platform_tests(android_archs, timeout, retries, keep_alive) end)
+          | tasks
+        ]
       else
         tasks
       end
 
     tasks =
       if ios_archs != [] do
-        [Task.async(fn -> run_platform_tests(ios_archs, timeout, retries, keep_alive) end) | tasks]
+        [
+          Task.async(fn -> run_platform_tests(ios_archs, timeout, retries, keep_alive) end)
+          | tasks
+        ]
       else
         tasks
       end
@@ -158,9 +164,12 @@ defmodule MobileRuntimes.E2E.Runner do
     ]
 
     result =
-      Retry.with_retry(fn ->
-        execute_suite(arch, timeout, keep_alive)
-      end, retry_opts)
+      Retry.with_retry(
+        fn ->
+          execute_suite(arch, timeout, keep_alive)
+        end,
+        retry_opts
+      )
 
     case result do
       {:ok, {tests, total_time}} ->

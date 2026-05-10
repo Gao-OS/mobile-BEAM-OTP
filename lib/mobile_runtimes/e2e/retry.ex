@@ -43,7 +43,10 @@ defmodule MobileRuntimes.E2E.Retry do
       iex> MobileRuntimes.E2E.Retry.with_retry(fn -> {:error, :infrastructure, :timeout} end)
       {:error, :max_retries_exceeded, :timeout}
   """
-  @spec with_retry((() -> {:ok, term()} | {:error, term()} | {:error, :infrastructure, term()}), retry_opts()) ::
+  @spec with_retry(
+          (-> {:ok, term()} | {:error, term()} | {:error, :infrastructure, term()}),
+          retry_opts()
+        ) ::
           {:ok, term()} | {:error, term()} | {:error, :max_retries_exceeded, term()}
   def with_retry(fun, opts \\ []) when is_function(fun, 0) do
     max_retries = Keyword.get(opts, :max_retries, @default_max_retries)
@@ -62,7 +65,11 @@ defmodule MobileRuntimes.E2E.Retry do
       {:error, :infrastructure, reason} when attempt < max_retries ->
         delay = calculate_delay(attempt, initial_delay, max_delay)
         on_retry.(attempt + 1, reason)
-        Logger.info("Retry attempt #{attempt + 1}/#{max_retries} after #{delay}ms: #{inspect(reason)}")
+
+        Logger.info(
+          "Retry attempt #{attempt + 1}/#{max_retries} after #{delay}ms: #{inspect(reason)}"
+        )
+
         Process.sleep(delay)
         do_retry(fun, attempt + 1, max_retries, initial_delay, max_delay, on_retry, reason)
 
@@ -79,9 +86,10 @@ defmodule MobileRuntimes.E2E.Retry do
 
   Formula: min(initial * 2^attempt + jitter, max_delay)
   """
-  @spec calculate_delay(non_neg_integer(), non_neg_integer(), non_neg_integer()) :: non_neg_integer()
+  @spec calculate_delay(non_neg_integer(), non_neg_integer(), non_neg_integer()) ::
+          non_neg_integer()
   def calculate_delay(attempt, initial_delay, max_delay) do
-    base = initial_delay * :math.pow(2, attempt) |> round()
+    base = (initial_delay * :math.pow(2, attempt)) |> round()
     jitter = :rand.uniform(div(initial_delay, 2))
     min(base + jitter, max_delay)
   end
@@ -107,28 +115,62 @@ defmodule MobileRuntimes.E2E.Retry do
   def classify_error(reason) do
     case reason do
       # Infrastructure errors - should retry
-      :emulator_timeout -> {:retry, :emulator_timeout}
-      :emulator_crash -> {:retry, :emulator_crash}
-      :simulator_timeout -> {:retry, :simulator_timeout}
-      :simulator_crash -> {:retry, :simulator_crash}
-      :adb_connection_failed -> {:retry, :adb_connection_failed}
-      :xcrun_failed -> {:retry, :xcrun_failed}
-      {:install_failed, _} -> {:retry, reason}
-      {:app_start_failed, _} -> {:retry, reason}
-      :connection_refused -> {:retry, :connection_refused}
-      :network_timeout -> {:retry, :network_timeout}
+      :emulator_timeout ->
+        {:retry, :emulator_timeout}
+
+      :emulator_crash ->
+        {:retry, :emulator_crash}
+
+      :simulator_timeout ->
+        {:retry, :simulator_timeout}
+
+      :simulator_crash ->
+        {:retry, :simulator_crash}
+
+      :adb_connection_failed ->
+        {:retry, :adb_connection_failed}
+
+      :xcrun_failed ->
+        {:retry, :xcrun_failed}
+
+      {:install_failed, _} ->
+        {:retry, reason}
+
+      {:app_start_failed, _} ->
+        {:retry, reason}
+
+      :connection_refused ->
+        {:retry, :connection_refused}
+
+      :network_timeout ->
+        {:retry, :network_timeout}
 
       # Non-retriable errors
-      :out_of_memory -> {:no_retry, {:fatal, :out_of_memory, "System ran out of memory"}}
-      :architecture_mismatch -> {:no_retry, {:fatal, :architecture_mismatch, "App built for wrong architecture"}}
-      :invalid_architecture -> {:no_retry, {:config, :invalid_architecture, "Invalid architecture specified"}}
-      :test_app_not_found -> {:no_retry, {:config, :test_app_not_found, "Test app not built. Run mix e2e.build first"}}
-      :ndk_not_found -> {:no_retry, {:config, :ndk_not_found, "Android NDK not found. Set ANDROID_NDK_HOME"}}
-      :xcode_not_found -> {:no_retry, {:config, :xcode_not_found, "Xcode not found. Install Xcode and command line tools"}}
-      {:test_failed, _} -> {:no_retry, reason}
+      :out_of_memory ->
+        {:no_retry, {:fatal, :out_of_memory, "System ran out of memory"}}
+
+      :architecture_mismatch ->
+        {:no_retry, {:fatal, :architecture_mismatch, "App built for wrong architecture"}}
+
+      :invalid_architecture ->
+        {:no_retry, {:config, :invalid_architecture, "Invalid architecture specified"}}
+
+      :test_app_not_found ->
+        {:no_retry, {:config, :test_app_not_found, "Test app not built. Run mix e2e.build first"}}
+
+      :ndk_not_found ->
+        {:no_retry, {:config, :ndk_not_found, "Android NDK not found. Set ANDROID_NDK_HOME"}}
+
+      :xcode_not_found ->
+        {:no_retry,
+         {:config, :xcode_not_found, "Xcode not found. Install Xcode and command line tools"}}
+
+      {:test_failed, _} ->
+        {:no_retry, reason}
 
       # Unknown errors - don't retry by default
-      _ -> {:no_retry, reason}
+      _ ->
+        {:no_retry, reason}
     end
   end
 

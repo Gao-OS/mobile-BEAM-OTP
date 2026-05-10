@@ -66,7 +66,8 @@ defmodule MobileRuntimes.E2E.JUnitXML do
     time_sec = Float.round(test.time_ms / 1000, 3)
     classname = category_to_classname(test.category)
 
-    base = "    <testcase classname=\"#{classname}\" name=\"#{escape_xml(test.name)}\" time=\"#{time_sec}\""
+    base =
+      "    <testcase classname=\"#{classname}\" name=\"#{escape_xml(test.name)}\" time=\"#{time_sec}\""
 
     case test.status do
       :passed ->

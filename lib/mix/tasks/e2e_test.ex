@@ -150,7 +150,12 @@ defmodule Mix.Tasks.E2e.Test do
 
       {:error, :invalid_architecture} ->
         valid = Architecture.all() |> Enum.map(&format_arch/1) |> Enum.join(", ")
-        bad = Enum.find(arch_strings, fn s -> Architecture.parse(s) == {:error, :invalid_architecture} end)
+
+        bad =
+          Enum.find(arch_strings, fn s ->
+            Architecture.parse(s) == {:error, :invalid_architecture}
+          end)
+
         {:error, "Invalid architecture: #{bad}. Valid options: #{valid}"}
     end
   end

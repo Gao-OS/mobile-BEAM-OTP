@@ -195,7 +195,9 @@ defmodule MobileRuntimes.E2E.Emulator do
           case System.cmd("adb", ["-s", emulator_id, "shell", "getprop", "sys.boot_completed"],
                  stderr_to_stdout: true
                ) do
-            {"1\n", 0} -> {:ok, emulator_id}
+            {"1\n", 0} ->
+              {:ok, emulator_id}
+
             _ ->
               Process.sleep(2000)
               wait_for_android_boot_loop(start_time, timeout)
@@ -212,7 +214,9 @@ defmodule MobileRuntimes.E2E.Emulator do
     System.cmd("adb", ["-s", emulator_id, "emu", "kill"], stderr_to_stdout: true)
 
     case Process.get(:android_emulator_port) do
-      nil -> :ok
+      nil ->
+        :ok
+
       port ->
         Port.close(port)
         Process.delete(:android_emulator_port)
@@ -315,7 +319,9 @@ defmodule MobileRuntimes.E2E.Emulator do
   end
 
   defp get_booted_ios_simulator do
-    case System.cmd("xcrun", ["simctl", "list", "devices", "booted", "-j"], stderr_to_stdout: true) do
+    case System.cmd("xcrun", ["simctl", "list", "devices", "booted", "-j"],
+           stderr_to_stdout: true
+         ) do
       {output, 0} ->
         case Jason.decode(output) do
           {:ok, %{"devices" => devices}} ->

@@ -95,7 +95,10 @@ defmodule MobileRuntimes.E2E.Builder do
           "./gradlew"
 
         true ->
-          Logger.error("Neither gradle nor gradlew found. Install Gradle or add wrapper to project.")
+          Logger.error(
+            "Neither gradle nor gradlew found. Install Gradle or add wrapper to project."
+          )
+
           nil
       end
 
@@ -160,11 +163,15 @@ defmodule MobileRuntimes.E2E.Builder do
     # Use generic destinations to avoid hardcoding simulator names
     destination =
       cond do
-        :ios_arm64 in archs -> "generic/platform=iOS"
+        :ios_arm64 in archs ->
+          "generic/platform=iOS"
+
         :ios_arm64_simulator in archs or :ios_x86_64_simulator in archs ->
           # Find an available iPhone or iPad simulator
           find_available_simulator() || "generic/platform=iOS Simulator"
-        true -> "generic/platform=iOS Simulator"
+
+        true ->
+          "generic/platform=iOS Simulator"
       end
 
     Logger.info("Running: xcodebuild for destination '#{destination}'")
@@ -217,7 +224,9 @@ defmodule MobileRuntimes.E2E.Builder do
 
   defp find_available_simulator do
     # Use xcrun simctl to find an available iOS simulator
-    case System.cmd("xcrun", ["simctl", "list", "devices", "available", "-j"], stderr_to_stdout: true) do
+    case System.cmd("xcrun", ["simctl", "list", "devices", "available", "-j"],
+           stderr_to_stdout: true
+         ) do
       {output, 0} ->
         case Jason.decode(output) do
           {:ok, %{"devices" => devices}} ->
